@@ -31,7 +31,7 @@ public class SheepClient implements Runnable{
 
     public SheepClient() {  
         System.out.println("Establishing connection. Please wait ...");
-        //initializeUI(); //uncomment this for no UI
+        //initializeUI(); // uncomment this for no UI
 
         try {
             socket = new Socket(SERVERNAME, SERVERPORT);
@@ -71,13 +71,12 @@ public class SheepClient implements Runnable{
             }
        }
     }
-    public void handle(String msg) {
+    public void handle(byte[] msg) {
         if (msg.equals(".bye")) {
             System.out.println("Good bye. Press RETURN to exit ...");
             stop();
         }
         else{
-            System.out.println(msg);
             updateScene(msg);  
         }
     }
@@ -112,11 +111,12 @@ public class SheepClient implements Runnable{
         client.stop();
     }
     
-    private void updateScene(String msg){
-        String [] parser = msg.split(",");
-        int key = Integer.parseInt(parser[0]);
-        int x = Integer.parseInt(parser[1]);
-        int y = Integer.parseInt(parser[2]);
+    private void updateScene(byte[] msg){
+        int key = toInt(msg);
+        int x = msg[4] & 0xFF;
+        int y = msg[5] & 0xFF;
+        
+        System.out.println("sheep: " + key + " x: " + x + " y: " + y);
         
         if(key == -1){
             noGrass.add(new Point(x, y));
@@ -128,7 +128,7 @@ public class SheepClient implements Runnable{
                 sheeps.put(key, new Sheep(x, y));
             }
         }
-        canvas.repaint();
+        //canvas.repaint(); //uncomment this for no UI
     }
     
     public static void main(String args[]) {  
@@ -192,6 +192,13 @@ public class SheepClient implements Runnable{
             
         }
 
+    }
+    
+    private int toInt(byte[] b) {
+        return   b[3] & 0xFF |
+                (b[2] & 0xFF) << 8 |
+                (b[1] & 0xFF) << 16 |
+                (b[0] & 0xFF) << 24;
     }
 
 }

@@ -11,7 +11,7 @@ import java.io.*;
 public class SheepClientThread extends Thread {  
     private Socket socket = null;
     private SheepClient client = null;
-    private BufferedReader streamIn = null;
+    private DataInputStream streamIn = null;
 
     public SheepClientThread(SheepClient _client, Socket _socket)  {  client = _client;
         socket = _socket;
@@ -21,7 +21,7 @@ public class SheepClientThread extends Thread {
     public void open() {
         try {
             //streamIn = new DataInputStream(socket.getInputStream());
-            streamIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            streamIn = new DataInputStream(socket.getInputStream());
         } catch(IOException ioe) {
             System.out.println("Error getting input stream: " + ioe);
             client.stop();
@@ -39,7 +39,12 @@ public class SheepClientThread extends Thread {
         while (true) {
             try
             {
-                client.handle(streamIn.readLine());
+                byte[] byteArray = new byte[6];
+                for(int i = 0; i < byteArray.length; i++){
+                    byteArray[i] = streamIn.readByte();
+                }
+                
+                client.handle(byteArray);
             }
             catch(IOException ioe)
             {  System.out.println("Listening error: " + ioe.getMessage());

@@ -12,6 +12,8 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import model.Sheep;
@@ -82,16 +84,16 @@ public class SheepServer implements Runnable{
     
     public synchronized void handle(int ID, String input) {
         try{
-            if (input.equals(".bye")) {
-                clients[findClient(ID)].send(".bye");
+            /*if (input.equals(".bye")) {
+                clients[findClient(ID)].send(".bye".toCharArray());
                 remove(ID); 
             }
-            else{
+            else{*/
                 sendToClients(ID, input);
                 canvas.repaint();
                 //for (int i = 0; i < clientCount; i++)
                   //  clients[i].send(ID + ": " + input);
-            }
+            //}
         } catch(NullPointerException e){ //if client exits unexpectedly
             remove(ID);
         }
@@ -132,12 +134,14 @@ public class SheepServer implements Runnable{
                 for(Map.Entry<Integer, Sheep> entry : sheeps.entrySet()) {
             	    int key = entry.getKey();
             	    Sheep value = entry.getValue();
-                    clients[clientCount].send(key+"," + value.getxPosition() +","+ value.getyPosition());
+                    byte[] toSend = prepareToByteArray(key, value.getxPosition(),value.getyPosition());
+                    clients[clientCount].send(toSend);
             	}
 
                 
                 for(Point p: noGrass){ //for the nograss positions
-                    clients[clientCount].send(-1+"," + (int)p.getX() +","+ (int)p.getY());
+                    byte[] toSend = prepareToByteArray(-1, p.x,p.y);
+                    clients[clientCount].send(toSend);
                 }
 
                 
@@ -179,9 +183,11 @@ public class SheepServer implements Runnable{
                         ID = -1; //tells that the update is for the grass
                         break;
         }
-    	
+    	byte[] toSend = prepareToByteArray(ID, sheep.getxPosition(),sheep.getyPosition());
+        System.out.println("sheep: " + ID + " x: " + sheep.getxPosition() + " y: " + sheep.getyPosition());
+        
         for (int i = 0; i < clientCount; i++){
-            clients[i].send(ID+"," + sheep.getxPosition() +","+ sheep.getyPosition());
+            clients[i].send(toSend);
         }
     }
     
@@ -250,5 +256,24 @@ public class SheepServer implements Runnable{
             
         }
 
+    }
+    
+    private byte[] intToByteArray(int value) {
+    return new byte[] {
+            (byte)(value >> 24),
+            (byte)(value >> 16),
+            (byte)(value >> 8),
+            (byte)value};
+    }
+    
+    private byte[] prepareToByteArray(int ID, int posX, int posY){
+        byte[] finalArray = new byte[6];
+        byte[] a1 = intToByteArray(ID);
+        
+        System.arraycopy(a1, 0, finalArray, 0, 4);
+       
+        finalArray[4] = (byte) posX;
+        finalArray[5] = (byte) posY;
+        return finalArray;
     }
 }

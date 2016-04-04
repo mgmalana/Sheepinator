@@ -2,13 +2,15 @@ package sheepinator;
 
 import java.net.*;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SheepServerThread extends Thread {  
     private Socket socket = null;
     private SheepServer server   = null;
     private int ID = -1;
     private BufferedReader streamIn =  null;
-    private PrintStream streamOut = null;
+    private DataOutputStream streamOut = null;
 
     public SheepServerThread(SheepServer _server, Socket _socket) {  
         super();
@@ -32,7 +34,7 @@ public class SheepServerThread extends Thread {
     
     public void open() throws IOException {
         streamIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        streamOut = new PrintStream(new BufferedOutputStream(socket.getOutputStream()));
+        streamOut = new DataOutputStream(socket.getOutputStream());
     }
     public void close() throws IOException {
         if (socket != null)    
@@ -48,9 +50,14 @@ public class SheepServerThread extends Thread {
         return ID;
     }
     
-    public void send(String msg) {
-        streamOut.println(msg);
-        streamOut.flush();
+    public void send(byte[] msg) {
+        try {
+            streamOut.write(msg);
+            streamOut.flush();
+
+        } catch (IOException ex) {
+            System.out.println(ID + " ERROR reading: " + ex.getMessage());
+        }
    }
 
 }
