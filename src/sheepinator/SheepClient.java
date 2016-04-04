@@ -119,6 +119,7 @@ public class SheepClient implements Runnable{
         if(key == -1){
             noGrass.add(new Point(x, y));
         } else if(x == Sheep.VALUE_FOR_REMOVE && y == Sheep.VALUE_FOR_REMOVE) {
+            //System.out.println("remove: " + key);
             sheeps.remove(key);
         } else if(key == socket.getLocalPort()) {
             sheepClient.setXYPosition(x, y);

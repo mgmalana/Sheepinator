@@ -28,8 +28,9 @@ public class SheepServer implements Runnable{
     private SheepServerThread client = null;
     private Thread thread = null;
     private int clientCount = 0;
+    private SheepServerThread clients[] = new SheepServerThread[Sheep.MAX_NUM_SHEEP];
     private static final int SERVERPORT = 1234;
-    private ConcurrentHashMap<Integer, SheepServerThread> clients = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, Sheep> sheeps = new ConcurrentHashMap<>();
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
     
     private JFrame frame;
@@ -77,13 +78,13 @@ public class SheepServer implements Runnable{
             thread = null;
         }
     }
-    /*
+    
     private int findClient(int ID)
     {  for (int i = 0; i < clientCount; i++)
          if (clients[i].getID() == ID)
             return i;
       return -1;
-    }*/
+    }
     
     public synchronized void handle(int ID, char input) {
         try{
