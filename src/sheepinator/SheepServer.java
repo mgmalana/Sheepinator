@@ -24,7 +24,7 @@ public class SheepServer implements Runnable{
     private SheepServerThread client = null;
     private Thread thread = null;
     private int clientCount = 0;
-    private SheepServerThread clients[] = new SheepServerThread[50];
+    private SheepServerThread clients[] = new SheepServerThread[Sheep.MAX_NUM_SHEEP];
     private static final int SERVERPORT = 1234;
     private HashMap<Integer, Sheep> sheeps = new HashMap<>();
     private HashSet <Point> noGrass = new HashSet<>();

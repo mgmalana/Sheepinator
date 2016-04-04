@@ -12,6 +12,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import model.Sheep;
@@ -49,26 +50,19 @@ public class SheepClient implements Runnable{
     }
     public void run() {  
         while (thread != null) {
-            try {  
-                String inputString = streamIn.readLine();
-            	if(inputString.equals("W") || inputString.equals("w") ||
-            			inputString.equals("S") || inputString.equals("s") ||
-            			inputString.equals("A") || inputString.equals("a") ||
-            			inputString.equals("D") || inputString.equals("d")) {
-	                streamOut.println(inputString.charAt(0));
-                } else if(inputString.equals("J") || inputString.equals("j")){
-                    Sheep sheep = sheeps.get(socket.getLocalPort());                    
-                    Point sheepPosition = new Point(sheep.getxPosition(), sheep.getyPosition());
-                    
-                    if(!noGrass.contains(sheepPosition)){
-                        streamOut.println(inputString.charAt(0));
-                    }
-                }
-                streamOut.flush();
-            } catch(IOException ioe) {
+            //try {  
+                Random random = new Random();
+
+                //char inputString = streamIn.readLine().charAt(0);
+                char[] inputChoices = {'w', 's', 'a', 'd', 'j'};
+                char inputString = inputChoices[random.nextInt(inputChoices.length)];
+                sleep(10);
+                
+            	sendToServer(inputString);
+            /*} catch(IOException ioe) {
                 System.out.println("Sending error: " + ioe.getMessage());
                 stop();
-            }
+            }*/
        }
     }
     public void handle(byte[] msg) {
@@ -200,5 +194,29 @@ public class SheepClient implements Runnable{
                 (b[1] & 0xFF) << 16 |
                 (b[0] & 0xFF) << 24;
     }
+    
+    private void sendToServer(char inputString){
+        if(inputString == 'W' || inputString == 'w' ||
+                        inputString == 'S' || inputString == 's' ||
+                        inputString == 'A' || inputString == 'a' ||
+                        inputString == 'D' || inputString == 'd') {
+                streamOut.println(inputString);
+        } else if(inputString == 'J' || inputString == 'j'){
+            Sheep sheep = sheeps.get(socket.getLocalPort());                    
+            Point sheepPosition = new Point(sheep.getxPosition(), sheep.getyPosition());
 
+            if(!noGrass.contains(sheepPosition)){
+                streamOut.println(inputString);
+            }
+        }
+        streamOut.flush();
+    }
+
+    private void sleep(int time){
+        try {
+            Thread.sleep(1000 * time);                 //1000 milliseconds is one second.
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

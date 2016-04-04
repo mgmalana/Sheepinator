@@ -11,6 +11,7 @@ public class Sheep {
 
 	public final static int SIZE_CELL = 7;
 	
+        public final static int MAX_NUM_SHEEP = 200;
 	public Sheep() {
             Random randomizer = new Random();
             xPosition = randomizer.nextInt(NUM_COLS);
