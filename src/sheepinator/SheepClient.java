@@ -157,8 +157,6 @@ public class SheepClient implements Runnable{
     public class ImageCanvas extends Canvas {
 
         private BufferedImage img;
-        private Image backBuffer;
-        private Graphics bBG;
   
         public ImageCanvas() {
             try {
@@ -183,27 +181,19 @@ public class SheepClient implements Runnable{
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            
-            if( backBuffer == null )
-            {
-                backBuffer = createImage( getWidth(), getHeight() );
-                bBG = backBuffer.getGraphics();
-            }
-            
-            bBG.setColor(Color.LIGHT_GRAY);
+                        
+            g.setColor(Color.LIGHT_GRAY);
             
             if (img != null) {
                 for(Point p: noGrass) {
-                    bBG.fillRect(p.x * Sheep.SIZE_CELL, p.y * Sheep.SIZE_CELL, Sheep.SIZE_CELL, Sheep.SIZE_CELL);
+                    g.fillRect(p.x * Sheep.SIZE_CELL, p.y * Sheep.SIZE_CELL, Sheep.SIZE_CELL, Sheep.SIZE_CELL);
                 }
             	for(Map.Entry<Integer, Sheep> entry : sheeps.entrySet()) {
             	    //int key = entry.getKey();
             	    Sheep value = entry.getValue();
-                    bBG.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
-            	}
-                
+                    g.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
+            	}                
             }
-            g.drawImage( backBuffer, 0, 0, this );
         }
 
     }

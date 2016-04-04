@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import model.Sheep;
 
 public class SheepServer implements Runnable{  
@@ -27,9 +28,8 @@ public class SheepServer implements Runnable{
     private SheepServerThread client = null;
     private Thread thread = null;
     private int clientCount = 0;
-    private SheepServerThread clients[] = new SheepServerThread[Sheep.MAX_NUM_SHEEP];
     private static final int SERVERPORT = 1234;
-    private ConcurrentHashMap<Integer, Sheep> sheeps = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, SheepServerThread> clients = new ConcurrentHashMap<>();
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
     
     private JFrame frame;
@@ -77,13 +77,13 @@ public class SheepServer implements Runnable{
             thread = null;
         }
     }
-    
+    /*
     private int findClient(int ID)
     {  for (int i = 0; i < clientCount; i++)
          if (clients[i].getID() == ID)
             return i;
       return -1;
-    }
+    }*/
     
     public synchronized void handle(int ID, char input) {
         try{
@@ -221,15 +221,14 @@ public class SheepServer implements Runnable{
 		
 		canvas = new ImageCanvas();
 		canvas.setBackground(Color.GREEN);
+                canvas.setDoubleBuffered(true);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.setVisible(true);
     }
     
-    public class ImageCanvas extends Canvas {
+    public class ImageCanvas extends JPanel {
 
         private BufferedImage img;
-        private Image backBuffer;
-        private Graphics bBG;
   
         public ImageCanvas() {
             try {
@@ -254,27 +253,20 @@ public class SheepServer implements Runnable{
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            
-            if( backBuffer == null )
-            {
-                backBuffer = createImage( getWidth(), getHeight() );
-                bBG = backBuffer.getGraphics();
-            }
-            
-            bBG.setColor(Color.LIGHT_GRAY);
+                        
+            g.setColor(Color.LIGHT_GRAY);
             
             if (img != null) {
                 for(Point p: noGrass) {
-                    bBG.fillRect(p.x * Sheep.SIZE_CELL, p.y * Sheep.SIZE_CELL, Sheep.SIZE_CELL, Sheep.SIZE_CELL);
+                    g.fillRect(p.x * Sheep.SIZE_CELL, p.y * Sheep.SIZE_CELL, Sheep.SIZE_CELL, Sheep.SIZE_CELL);
                 }
             	for(Map.Entry<Integer, Sheep> entry : sheeps.entrySet()) {
             	    //int key = entry.getKey();
             	    Sheep value = entry.getValue();
-                    bBG.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
+                    g.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
             	}
                 
             }
-            g.drawImage( backBuffer, 0, 0, this );
         }
 
     }
