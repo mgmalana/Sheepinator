@@ -188,7 +188,7 @@ public class SheepServer implements Runnable{
                         break;
         }
     	byte[] toSend = prepareToByteArray(ID, sheep.getxPosition(),sheep.getyPosition());
-        System.out.println("sheep: " + ID + " x: " + sheep.getxPosition() + " y: " + sheep.getyPosition());
+        //System.out.println("sheep: " + ID + " x: " + sheep.getxPosition() + " y: " + sheep.getyPosition());
         
         for (int i = 0; i < clientCount; i++){
             clients[i].send(toSend);

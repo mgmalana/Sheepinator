@@ -114,7 +114,7 @@ public class SheepClient implements Runnable{
         int x = msg[4] & 0xFF;
         int y = msg[5] & 0xFF;
         
-        System.out.println("sheep: " + key + " x: " + x + " y: " + y);
+        //System.out.println("sheep: " + key + " x: " + x + " y: " + y);
         
         if(key == -1){
             noGrass.add(new Point(x, y));
