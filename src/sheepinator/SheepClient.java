@@ -35,7 +35,7 @@ public class SheepClient implements Runnable{
     
     public SheepClient() {  
         System.out.println("Establishing connection. Please wait ...");
-        initializeUI(); // uncomment this for no UI
+        //initializeUI(); // uncomment this for no UI
 
         try {
             socket = new Socket(SERVERNAME, SERVERPORT);
@@ -129,7 +129,7 @@ public class SheepClient implements Runnable{
                 sheeps.put(key, new Sheep(x, y));
             }
         }
-        canvas.repaint(); //uncomment this for no UI
+        //canvas.repaint(); //uncomment this for no UI
     }
     
         private int toInt(byte[] b) {

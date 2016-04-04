@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import model.Sheep;
 
 public class SheepServerThread extends Thread {  
     private Socket socket = null;
@@ -11,7 +12,7 @@ public class SheepServerThread extends Thread {
     private int ID = -1;
     private DataInputStream streamIn =  null;
     private DataOutputStream streamOut = null;
-
+    private Sheep sheepClient = new Sheep();
     public SheepServerThread(SheepServer _server, Socket _socket) {  
         super();
         server = _server;  
@@ -47,6 +48,10 @@ public class SheepServerThread extends Thread {
     public int getID()
     {
         return ID;
+    }
+    
+    public Sheep getSheep(){
+        return sheepClient;
     }
     
     public void send(byte[] msg) {
