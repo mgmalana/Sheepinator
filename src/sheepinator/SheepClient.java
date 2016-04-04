@@ -114,6 +114,8 @@ public class SheepClient implements Runnable{
         
         if(key == -1){
             noGrass.add(new Point(x, y));
+        } else if(x == Sheep.VALUE_FOR_REMOVE && y == Sheep.VALUE_FOR_REMOVE) {
+            sheeps.remove(key);
         } else {
             if(sheeps.containsKey(key)){
                 Sheep sheep = sheeps.get(key);

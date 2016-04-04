@@ -111,6 +111,12 @@ public class SheepServer implements Runnable{
                 for (int i = pos+1; i < clientCount; i++)
                     clients[i-1] = clients[i];
             clientCount--;
+            
+            byte[] toSend = prepareToByteArray(ID, Sheep.VALUE_FOR_REMOVE , Sheep.VALUE_FOR_REMOVE);
+            for (int i = 0; i < clientCount; i++){
+                clients[i].send(toSend);
+            }
+            
             try {  
                 toTerminate.close();
             }
