@@ -25,12 +25,9 @@ import model.Sheep;
 public class SheepServer implements Runnable{  
     
     private ServerSocket server = null;
-    private SheepServerThread client = null;
     private Thread thread = null;
-    private int clientCount = 0;
-    private SheepServerThread clients[] = new SheepServerThread[Sheep.MAX_NUM_SHEEP];
     private static final int SERVERPORT = 1234;
-    private ConcurrentHashMap<Integer, Sheep> sheeps = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, SheepServerThread> clients = new ConcurrentHashMap<>();
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
     
     private JFrame frame;
@@ -78,13 +75,13 @@ public class SheepServer implements Runnable{
             thread = null;
         }
     }
-    
+    /*
     private int findClient(int ID)
     {  for (int i = 0; i < clientCount; i++)
          if (clients[i].getID() == ID)
             return i;
       return -1;
-    }
+    }*/
     
     public synchronized void handle(int ID, char input) {
         try{
@@ -99,26 +96,22 @@ public class SheepServer implements Runnable{
                   //  clients[i].send(ID + ": " + input);
             //}
         } catch(NullPointerException e){ //if client exits unexpectedly
+            e.printStackTrace();
             remove(ID);
         }
         //System.out.println(ID + ": " + input);
     }
     public synchronized void remove(int ID)
     {  
-        int pos = findClient(ID);
-        if (pos >= 0) {
-            SheepServerThread toTerminate = clients[pos];
-            System.out.println("Removing client thread " + ID + " at " + pos);
-            sheeps.remove(ID);
-            canvas.repaint();
-            if (pos < clientCount-1)
-                for (int i = pos+1; i < clientCount; i++)
-                    clients[i-1] = clients[i];
-            clientCount--;
+        if (clients.containsKey(ID)) {
+            SheepServerThread toTerminate = clients.remove(ID);
+            System.out.println("Removing client thread " + ID);
             
             byte[] toSend = prepareToByteArray(ID, Sheep.VALUE_FOR_REMOVE , Sheep.VALUE_FOR_REMOVE);
-            for (int i = 0; i < clientCount; i++){
-                clients[i].send(toSend);
+            for(Map.Entry<Integer, SheepServerThread> entry : clients.entrySet()) {
+            	    //int key = entry.getKey();
+            	    SheepServerThread value = entry.getValue();
+                    value.send(toSend);
             }
             
             try {  
@@ -128,47 +121,47 @@ public class SheepServer implements Runnable{
                 System.out.println("Error closing thread: " + ioe);
             }
             toTerminate.stop(); 
+            canvas.repaint();
+
         }
     }
-    private void addThread(Socket socket) {  
-        if (clientCount < clients.length) {
+    private synchronized void addThread(Socket socket) {  
+        if (clients.size() < Sheep.MAX_NUM_SHEEP) {
             System.out.println("Client accepted: " + socket);
-            clients[clientCount] = new SheepServerThread(this, socket);
             try {  
-                clients[clientCount].open(); 
-                clients[clientCount].start(); 
-                Sheep sheep = new Sheep();
-                
-                sheeps.put(socket.getPort(), sheep);
-                                
-                for(Map.Entry<Integer, Sheep> entry : sheeps.entrySet()) {
+                SheepServerThread client = new SheepServerThread(this, socket);
+                clients.put(socket.getPort(), client);
+
+                client.open(); 
+                for(Map.Entry<Integer, SheepServerThread> entry : clients.entrySet()) {
             	    int key = entry.getKey();
-            	    Sheep value = entry.getValue();
+            	    Sheep value = entry.getValue().getSheep();
                     byte[] toSend = prepareToByteArray(key, value.getxPosition(),value.getyPosition());
-                    clients[clientCount].send(toSend);
+                    client.send(toSend);
             	}
 
-                
                 for(Point p: noGrass){ //for the nograss positions
                     byte[] toSend = prepareToByteArray(-1, p.x,p.y);
-                    clients[clientCount].send(toSend);
+                    client.send(toSend);
                 }
-
+                client.start(); 
                 
                 sendToClients(socket.getPort(), 'n');
-                canvas.repaint();
-
-                
-                clientCount++; 
+                canvas.repaint();                
             } catch(IOException ioe) {
                 System.out.println("Error opening thread: " + ioe);
             } 
-        } else
-            System.out.println("Client refused: maximum " + clients.length + " reached.");
+        } else{
+            System.out.println("Client refused: maximum " + clients.size() + " reached.");
+        }
+    }
+    
+    private synchronized void sendSceneToClient(){
+        
     }
     
     private void sendToClients(int ID, char input) {
-    	Sheep sheep = sheeps.get(ID);
+    	Sheep sheep = clients.get(ID).getSheep();
         //System.out.println("input: " + input);
         switch(input){
                 case 'W':
@@ -195,10 +188,13 @@ public class SheepServer implements Runnable{
         }
     	byte[] toSend = prepareToByteArray(ID, sheep.getxPosition(),sheep.getyPosition());
         //System.out.println("sheep: " + ID + " x: " + sheep.getxPosition() + " y: " + sheep.getyPosition());
-        
-        for (int i = 0; i < clientCount; i++){
-            clients[i].send(toSend);
+                
+        for(Map.Entry<Integer, SheepServerThread> entry : clients.entrySet()) {
+            //int key = entry.getKey();
+            SheepServerThread value = entry.getValue();
+            value.send(toSend);
         }
+
     }
     
     public static void main(String args[]) {  
@@ -261,9 +257,9 @@ public class SheepServer implements Runnable{
                 for(Point p: noGrass) {
                     g.fillRect(p.x * Sheep.SIZE_CELL, p.y * Sheep.SIZE_CELL, Sheep.SIZE_CELL, Sheep.SIZE_CELL);
                 }
-            	for(Map.Entry<Integer, Sheep> entry : sheeps.entrySet()) {
+            	for(Map.Entry<Integer, SheepServerThread> entry : clients.entrySet()) {
             	    //int key = entry.getKey();
-            	    Sheep value = entry.getValue();
+            	    Sheep value = entry.getValue().getSheep();
                     g.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
             	}
                 

@@ -17,6 +17,7 @@ import java.util.Random;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import model.Sheep;
 
 public class SheepClient implements Runnable{
@@ -35,7 +36,7 @@ public class SheepClient implements Runnable{
     
     public SheepClient() {  
         System.out.println("Establishing connection. Please wait ...");
-        //initializeUI(); // uncomment this for no UI
+        initializeUI(); // uncomment this for no UI
 
         try {
             socket = new Socket(SERVERNAME, SERVERPORT);
@@ -144,18 +145,19 @@ public class SheepClient implements Runnable{
     *
     */
     
-    private void initializeUI() {
+    public final void initializeUI() {
 		frame = new JFrame();
-		frame.setBounds(0, 0, Sheep.SIZE_CELL * Sheep.NUM_COLS, Sheep.SIZE_CELL * Sheep.NUM_ROWS + 50);
+		frame.setBounds(0, 0, Sheep.SIZE_CELL * Sheep.NUM_COLS, Sheep.SIZE_CELL * Sheep.NUM_ROWS + 50); //750 because may sumosobra
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		canvas = new ImageCanvas();
 		canvas.setBackground(Color.GREEN);
+                canvas.setDoubleBuffered(true);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.setVisible(true);
     }
     
-    public class ImageCanvas extends Canvas {
+    public class ImageCanvas extends JPanel {
 
         private BufferedImage img;
   
@@ -193,7 +195,8 @@ public class SheepClient implements Runnable{
             	    //int key = entry.getKey();
             	    Sheep value = entry.getValue();
                     g.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
-            	}                
+            	}
+                
             }
         }
 

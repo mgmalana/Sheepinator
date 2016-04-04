@@ -43,12 +43,13 @@ public class SheepClientThread extends Thread {
                 for(int i = 0; i < byteArray.length; i++){
                     byteArray[i] = streamIn.readByte();
                 }
-                
                 client.handle(byteArray);
             }
             catch(IOException ioe)
-            {  System.out.println("Listening error: " + ioe.getMessage());
-               client.stop();
+            {  
+                System.out.println("Listening error: " + ioe.getMessage());
+                ioe.printStackTrace();
+                client.stop();
             }
        }
     }

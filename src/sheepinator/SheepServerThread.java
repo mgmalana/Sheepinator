@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import model.Sheep;
 
 public class SheepServerThread extends Thread {  
     private Socket socket = null;
@@ -11,7 +12,8 @@ public class SheepServerThread extends Thread {
     private int ID = -1;
     private DataInputStream streamIn =  null;
     private DataOutputStream streamOut = null;
-
+    private Sheep sheepClient = new Sheep();
+    
     public SheepServerThread(SheepServer _server, Socket _socket) {  
         super();
         server = _server;  
@@ -19,6 +21,7 @@ public class SheepServerThread extends Thread {
         ID = socket.getPort();
     }
     
+    @Override
     public void run() {   
         System.out.println("Server Thread " + ID + " running.");
         while (true){
@@ -57,6 +60,11 @@ public class SheepServerThread extends Thread {
         } catch (IOException ex) {
             System.out.println(ID + " ERROR reading: " + ex.getMessage());
         }
-   }
+    }
+    
+    public Sheep getSheep() {
+        return sheepClient;
+    }
+    
 
 }
