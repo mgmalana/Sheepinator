@@ -6,12 +6,12 @@ public class Sheep {
 	private int xPosition = 0;
 	private int yPosition = 0;
 	
-	public final static int NUM_ROWS = 100;
-	public final static int NUM_COLS = 100;
+	public final static int NUM_ROWS = 200;
+	public final static int NUM_COLS = 200;
 
-	public final static int SIZE_CELL = 7;
+	public final static int SIZE_CELL = 3;
 	
-        public final static int MAX_NUM_SHEEP = 300;
+        public final static int MAX_NUM_SHEEP = 500;
         
         public final static int VALUE_FOR_REMOVE = 255;
         
