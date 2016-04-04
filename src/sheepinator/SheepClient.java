@@ -56,7 +56,7 @@ public class SheepClient implements Runnable{
                 //char inputString = streamIn.readLine().charAt(0);
                 char[] inputChoices = {'w', 's', 'a', 'd', 'j'};
                 char inputString = inputChoices[random.nextInt(inputChoices.length)];
-                sleep(10);
+                sleep(5);
                 
             	sendToServer(inputString);
             /*} catch(IOException ioe) {
@@ -110,7 +110,7 @@ public class SheepClient implements Runnable{
         int x = msg[4] & 0xFF;
         int y = msg[5] & 0xFF;
         
-        System.out.println("sheep: " + key + " x: " + x + " y: " + y);
+        //System.out.println("sheep: " + key + " x: " + x + " y: " + y);
         
         if(key == -1){
             noGrass.add(new Point(x, y));
@@ -169,7 +169,7 @@ public class SheepClient implements Runnable{
             super.paint(g);
             g.setColor(Color.LIGHT_GRAY);
             
-            System.out.println("painting");
+            //System.out.println("painting");
 
             if (img != null) {
                 for(Point p: noGrass) {

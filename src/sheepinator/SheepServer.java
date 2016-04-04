@@ -97,7 +97,7 @@ public class SheepServer implements Runnable{
         } catch(NullPointerException e){ //if client exits unexpectedly
             remove(ID);
         }
-        System.out.println(ID + ": " + input);
+        //System.out.println(ID + ": " + input);
     }
     public synchronized void remove(int ID)
     {  
@@ -159,7 +159,7 @@ public class SheepServer implements Runnable{
     
     private void sendToClients(int ID, String input) {
     	Sheep sheep = sheeps.get(ID);
-        System.out.println("input: " + input);
+        //System.out.println("input: " + input);
         switch(input){
                 case "W":
                 case "w":
@@ -184,7 +184,7 @@ public class SheepServer implements Runnable{
                         break;
         }
     	byte[] toSend = prepareToByteArray(ID, sheep.getxPosition(),sheep.getyPosition());
-        System.out.println("sheep: " + ID + " x: " + sheep.getxPosition() + " y: " + sheep.getyPosition());
+        //System.out.println("sheep: " + ID + " x: " + sheep.getxPosition() + " y: " + sheep.getyPosition());
         
         for (int i = 0; i < clientCount; i++){
             clients[i].send(toSend);
@@ -239,7 +239,7 @@ public class SheepServer implements Runnable{
             super.paint(g);
             g.setColor(Color.LIGHT_GRAY);
             
-            System.out.println("painting");
+            //System.out.println("painting");
 
             if (img != null) {
                 for(Point p: noGrass) {
