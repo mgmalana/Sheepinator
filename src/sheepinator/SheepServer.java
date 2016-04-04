@@ -5,6 +5,7 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.net.*;
@@ -227,7 +228,9 @@ public class SheepServer implements Runnable{
     public class ImageCanvas extends Canvas {
 
         private BufferedImage img;
-
+        private Image backBuffer;
+        private Graphics bBG;
+  
         public ImageCanvas() {
             try {
                 img = ImageIO.read(new File("Images/sheep.png"));
@@ -238,6 +241,12 @@ public class SheepServer implements Runnable{
         }
 
         @Override
+        public void update( Graphics g )
+        {
+            paint( g );
+        }
+        
+        @Override
         public Dimension getPreferredSize() {
             return img == null ? new Dimension(200, 200) : new Dimension(img.getWidth(), img.getHeight());
         }
@@ -245,23 +254,27 @@ public class SheepServer implements Runnable{
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            g.setColor(Color.LIGHT_GRAY);
             
-            //System.out.println("painting");
-
+            if( backBuffer == null )
+            {
+                backBuffer = createImage( getWidth(), getHeight() );
+                bBG = backBuffer.getGraphics();
+            }
+            
+            bBG.setColor(Color.LIGHT_GRAY);
+            
             if (img != null) {
                 for(Point p: noGrass) {
-                    g.fillRect(p.x * Sheep.SIZE_CELL, p.y * Sheep.SIZE_CELL, Sheep.SIZE_CELL, Sheep.SIZE_CELL);
+                    bBG.fillRect(p.x * Sheep.SIZE_CELL, p.y * Sheep.SIZE_CELL, Sheep.SIZE_CELL, Sheep.SIZE_CELL);
                 }
             	for(Map.Entry<Integer, Sheep> entry : sheeps.entrySet()) {
             	    //int key = entry.getKey();
             	    Sheep value = entry.getValue();
-                    g.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
+                    bBG.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
             	}
                 
             }
-            
-            
+            g.drawImage( backBuffer, 0, 0, this );
         }
 
     }

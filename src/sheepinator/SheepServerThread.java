@@ -25,7 +25,6 @@ public class SheepServerThread extends Thread {
             try {
                 server.handle(ID, streamIn.readChar());
             } catch(IOException ioe) { 
-                System.out.println(ID + " ERROR reading: " + ioe.getMessage());
                 server.remove(ID);
                 stop();
             }
