@@ -3,14 +3,14 @@ package sheepinator;
 import java.net.*;
 import java.io.*;
 
-public class ChatServerThread extends Thread {  
+public class SheepServerThread extends Thread {  
     private Socket socket = null;
-    private ChatServer server   = null;
+    private SheepServer server   = null;
     private int ID = -1;
     private BufferedReader streamIn =  null;
     private PrintStream streamOut = null;
 
-    public ChatServerThread(ChatServer _server, Socket _socket) {  
+    public SheepServerThread(SheepServer _server, Socket _socket) {  
         super();
         server = _server;  
         socket = _socket;  

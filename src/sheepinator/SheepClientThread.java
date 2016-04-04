@@ -4,16 +4,16 @@ package sheepinator;
  *
  * @author mgmalana
  */
-import sheepinator.ChatClient;
+import sheepinator.SheepClient;
 import java.net.*;
 import java.io.*;
 
-public class ChatClientThread extends Thread {  
+public class SheepClientThread extends Thread {  
     private Socket socket = null;
-    private ChatClient client = null;
+    private SheepClient client = null;
     private BufferedReader streamIn = null;
 
-    public ChatClientThread(ChatClient _client, Socket _socket)  {  client = _client;
+    public SheepClientThread(SheepClient _client, Socket _socket)  {  client = _client;
         socket = _socket;
         open();  
         start();

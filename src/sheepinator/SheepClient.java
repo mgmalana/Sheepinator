@@ -16,11 +16,11 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import model.Sheep;
 
-public class ChatClient implements Runnable{
+public class SheepClient implements Runnable{
     private Socket socket = null;
     private BufferedReader streamIn =  null;
     private PrintStream streamOut = null;
-    private ChatClientThread client    = null;
+    private SheepClientThread client    = null;
     private Thread thread = null;
     private static final int SERVERPORT = 1234;
     private static final String SERVERNAME = "0.0.0.0";
@@ -29,7 +29,7 @@ public class ChatClient implements Runnable{
     private JFrame frame;
     private ImageCanvas canvas;
 
-    public ChatClient() {  
+    public SheepClient() {  
         System.out.println("Establishing connection. Please wait ...");
         //initializeUI(); //uncomment this for no UI
 
@@ -87,7 +87,7 @@ public class ChatClient implements Runnable{
         
         
         if (thread == null){
-            client = new ChatClientThread(this, socket);
+            client = new SheepClientThread(this, socket);
             thread = new Thread(this);                   
             thread.start();
         }
@@ -132,7 +132,7 @@ public class ChatClient implements Runnable{
     }
     
     public static void main(String args[]) {  
-        ChatClient client = new ChatClient();
+        SheepClient client = new SheepClient();
     }
     
     /*

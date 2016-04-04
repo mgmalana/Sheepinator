@@ -16,13 +16,13 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import model.Sheep;
 
-public class ChatServer implements Runnable{  
+public class SheepServer implements Runnable{  
     
     private ServerSocket server = null;
-    private ChatServerThread client = null;
+    private SheepServerThread client = null;
     private Thread thread = null;
     private int clientCount = 0;
-    private ChatServerThread clients[] = new ChatServerThread[50];
+    private SheepServerThread clients[] = new SheepServerThread[50];
     private static final int SERVERPORT = 1234;
     private HashMap<Integer, Sheep> sheeps = new HashMap<>();
     private HashSet <Point> noGrass = new HashSet<>();
@@ -30,7 +30,7 @@ public class ChatServer implements Runnable{
     private JFrame frame;
     private ImageCanvas canvas;
     
-    public ChatServer() {  
+    public SheepServer() {  
         try
         {
             System.out.println("Binding to port " + SERVERPORT + ", please wait  ...");
@@ -101,7 +101,7 @@ public class ChatServer implements Runnable{
     {  
         int pos = findClient(ID);
         if (pos >= 0) {
-            ChatServerThread toTerminate = clients[pos];
+            SheepServerThread toTerminate = clients[pos];
             System.out.println("Removing client thread " + ID + " at " + pos);
             sheeps.remove(ID);
             canvas.repaint();
@@ -121,7 +121,7 @@ public class ChatServer implements Runnable{
     private void addThread(Socket socket) {  
         if (clientCount < clients.length) {
             System.out.println("Client accepted: " + socket);
-            clients[clientCount] = new ChatServerThread(this, socket);
+            clients[clientCount] = new SheepServerThread(this, socket);
             try {  
                 clients[clientCount].open(); 
                 clients[clientCount].start(); 
@@ -186,7 +186,7 @@ public class ChatServer implements Runnable{
     }
     
     public static void main(String args[]) {  
-        ChatServer server = new ChatServer();
+        SheepServer server = new SheepServer();
     }
     
     /*
