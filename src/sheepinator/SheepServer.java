@@ -207,7 +207,7 @@ public class SheepServer implements Runnable{
      * */
     public final void initializeUI() {
 		frame = new JFrame();
-		frame.setBounds(0, 0, 700, 750); //750 because may sumosobra
+		frame.setBounds(0, 0, Sheep.SIZE_CELL * Sheep.NUM_COLS, Sheep.SIZE_CELL * Sheep.NUM_ROWS + 50); //750 because may sumosobra
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		canvas = new ImageCanvas();

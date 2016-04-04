@@ -137,7 +137,7 @@ public class SheepClient implements Runnable{
     
     private void initializeUI() {
 		frame = new JFrame();
-		frame.setBounds(0, 0, 700, 750);
+		frame.setBounds(0, 0, Sheep.SIZE_CELL * Sheep.NUM_COLS, Sheep.SIZE_CELL * Sheep.NUM_ROWS + 50);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		canvas = new ImageCanvas();
