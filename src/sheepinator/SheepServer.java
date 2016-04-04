@@ -1,22 +1,17 @@
 package sheepinator;
 
 import java.awt.BorderLayout;
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.net.*;
 import java.io.*;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -25,7 +20,6 @@ import model.Sheep;
 public class SheepServer implements Runnable{  
     
     private ServerSocket server = null;
-    private SheepServerThread client = null;
     private Thread thread = null;
     private int clientCount = 0;
     private SheepServerThread clients[] = new SheepServerThread[Sheep.MAX_NUM_SHEEP];
@@ -194,7 +188,7 @@ public class SheepServer implements Runnable{
                         break;
         }
     	byte[] toSend = prepareToByteArray(ID, sheep.getxPosition(),sheep.getyPosition());
-        //System.out.println("sheep: " + ID + " x: " + sheep.getxPosition() + " y: " + sheep.getyPosition());
+        System.out.println("sheep: " + ID + " x: " + sheep.getxPosition() + " y: " + sheep.getyPosition());
         
         for (int i = 0; i < clientCount; i++){
             clients[i].send(toSend);

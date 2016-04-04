@@ -17,6 +17,7 @@ import java.util.Random;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import model.Sheep;
 
 public class SheepClient implements Runnable{
@@ -31,11 +32,10 @@ public class SheepClient implements Runnable{
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
     private JFrame frame;
     private ImageCanvas canvas;
-    private Sheep sheepClient = new Sheep();
     
     public SheepClient() {  
         System.out.println("Establishing connection. Please wait ...");
-        //initializeUI(); // uncomment this for no UI
+        initializeUI(); // uncomment this for no UI
 
         try {
             socket = new Socket(SERVERNAME, SERVERPORT);
@@ -114,16 +114,14 @@ public class SheepClient implements Runnable{
         int x = msg[4] & 0xFF;
         int y = msg[5] & 0xFF;
         
-        //System.out.println("sheep: " + key + " x: " + x + " y: " + y);
+        System.out.println("sheep: " + key + " x: " + x + " y: " + y);
         
         if(key == -1){
             noGrass.add(new Point(x, y));
         } else if(x == Sheep.VALUE_FOR_REMOVE && y == Sheep.VALUE_FOR_REMOVE) {
             //System.out.println("remove: " + key);
             sheeps.remove(key);
-        } else if(key == socket.getLocalPort()) {
-            sheepClient.setXYPosition(x, y);
-        }else {
+        } else {
             if(sheeps.containsKey(key)){
                 Sheep sheep = sheeps.get(key);
                 sheep.setXYPosition(x, y);
@@ -131,7 +129,39 @@ public class SheepClient implements Runnable{
                 sheeps.put(key, new Sheep(x, y));
             }
         }
-        //canvas.repaint(); //uncomment this for no UI
+        canvas.repaint(); //uncomment this for no UI
+    }
+    
+        private int toInt(byte[] b) {
+        return   b[3] & 0xFF |
+                (b[2] & 0xFF) << 8 |
+                (b[1] & 0xFF) << 16 |
+                (b[0] & 0xFF) << 24;
+    }
+    
+    private void sendToServer(char inputString) throws IOException{
+        if(inputString == 'W' || inputString == 'w' ||
+                        inputString == 'S' || inputString == 's' ||
+                        inputString == 'A' || inputString == 'a' ||
+                        inputString == 'D' || inputString == 'd') {
+                streamOut.writeChar(inputString);
+        } else if(inputString == 'J' || inputString == 'j'){
+            Sheep sheep = sheeps.get(socket.getLocalPort());
+            Point sheepPosition = new Point(sheep.getxPosition(), sheep.getyPosition());
+
+            if(!noGrass.contains(sheepPosition)){
+                streamOut.writeChar(inputString);
+            }
+        }
+        streamOut.flush();
+    }
+
+    private void sleep(int time){
+        try {
+            Thread.sleep(1000 * time);                 //1000 milliseconds is one second.
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
     
     public static void main(String args[]) {  
@@ -144,18 +174,19 @@ public class SheepClient implements Runnable{
     *
     */
     
-    private void initializeUI() {
+        public final void initializeUI() {
 		frame = new JFrame();
-		frame.setBounds(0, 0, Sheep.SIZE_CELL * Sheep.NUM_COLS, Sheep.SIZE_CELL * Sheep.NUM_ROWS + 50);
+		frame.setBounds(0, 0, Sheep.SIZE_CELL * Sheep.NUM_COLS, Sheep.SIZE_CELL * Sheep.NUM_ROWS + 50); //750 because may sumosobra
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		canvas = new ImageCanvas();
 		canvas.setBackground(Color.GREEN);
+                canvas.setDoubleBuffered(true);
 		frame.getContentPane().add(canvas, BorderLayout.CENTER);
 		frame.setVisible(true);
     }
     
-    public class ImageCanvas extends Canvas {
+    public class ImageCanvas extends JPanel {
 
         private BufferedImage img;
   
@@ -193,40 +224,10 @@ public class SheepClient implements Runnable{
             	    //int key = entry.getKey();
             	    Sheep value = entry.getValue();
                     g.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
-            	}                
+            	}
+                
             }
         }
 
-    }
-    
-    private int toInt(byte[] b) {
-        return   b[3] & 0xFF |
-                (b[2] & 0xFF) << 8 |
-                (b[1] & 0xFF) << 16 |
-                (b[0] & 0xFF) << 24;
-    }
-    
-    private void sendToServer(char inputString) throws IOException{
-        if(inputString == 'W' || inputString == 'w' ||
-                        inputString == 'S' || inputString == 's' ||
-                        inputString == 'A' || inputString == 'a' ||
-                        inputString == 'D' || inputString == 'd') {
-                streamOut.writeChar(inputString);
-        } else if(inputString == 'J' || inputString == 'j'){
-            Point sheepPosition = new Point(sheepClient.getxPosition(), sheepClient.getyPosition());
-
-            if(!noGrass.contains(sheepPosition)){
-                streamOut.writeChar(inputString);
-            }
-        }
-        streamOut.flush();
-    }
-
-    private void sleep(int time){
-        try {
-            Thread.sleep(1000 * time);                 //1000 milliseconds is one second.
-        } catch(InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
     }
 }
