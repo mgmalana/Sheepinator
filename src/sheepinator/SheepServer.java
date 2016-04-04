@@ -71,7 +71,7 @@ public class SheepServer implements Runnable{
         }
     }
         
-    public synchronized void handle(int ID, char input) {
+    public void handle(int ID, char input) {
         try{
             /*if (input.equals(".bye")) {
                 clients[findClient(ID)].send(".bye".toCharArray());
@@ -88,7 +88,7 @@ public class SheepServer implements Runnable{
         }
         //System.out.println(ID + ": " + input);
     }
-    public synchronized void remove(int ID)
+    public void remove(int ID)
     {  
 
         if (clients.contains(ID)) {

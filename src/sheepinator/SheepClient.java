@@ -32,6 +32,7 @@ public class SheepClient implements Runnable{
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
     private JFrame frame;
     private ImageCanvas canvas;
+    private Sheep sheepClient = new Sheep();
     
     public SheepClient() {  
         System.out.println("Establishing connection. Please wait ...");
@@ -53,7 +54,7 @@ public class SheepClient implements Runnable{
     }
     public void run() {  
         Random random = new Random();
-        int secondsGap = random.nextInt(2) + 3;
+        int secondsGap = random.nextInt(1) + 2;
         while (thread != null) {
             try {  
 
@@ -122,6 +123,9 @@ public class SheepClient implements Runnable{
             //System.out.println("remove: " + key);
             sheeps.remove(key);
         } else {
+            if(key == socket.getLocalPort()) {
+                sheepClient.setXYPosition(x, y);
+            }
             if(sheeps.containsKey(key)){
                 Sheep sheep = sheeps.get(key);
                 sheep.setXYPosition(x, y);
@@ -146,8 +150,7 @@ public class SheepClient implements Runnable{
                         inputString == 'D' || inputString == 'd') {
                 streamOut.writeChar(inputString);
         } else if(inputString == 'J' || inputString == 'j'){
-            Sheep sheep = sheeps.get(socket.getLocalPort());
-            Point sheepPosition = new Point(sheep.getxPosition(), sheep.getyPosition());
+            Point sheepPosition = new Point(sheepClient.getxPosition(), sheepClient.getyPosition());
 
             if(!noGrass.contains(sheepPosition)){
                 streamOut.writeChar(inputString);
