@@ -20,7 +20,7 @@ import model.Sheep;
 public class SheepClient implements Runnable{
     private Socket socket = null;
     private BufferedReader streamIn =  null;
-    private PrintStream streamOut = null;
+    private DataOutputStream streamOut = null;
     private SheepClientThread client    = null;
     private Thread thread = null;
     private static final int SERVERPORT = 1234;
@@ -50,7 +50,7 @@ public class SheepClient implements Runnable{
     }
     public void run() {  
         while (thread != null) {
-            //try {  
+            try {  
                 Random random = new Random();
 
                 //char inputString = streamIn.readLine().charAt(0);
@@ -59,10 +59,10 @@ public class SheepClient implements Runnable{
                 sleep(5);
                 
             	sendToServer(inputString);
-            /*} catch(IOException ioe) {
+            } catch(IOException ioe) {
                 System.out.println("Sending error: " + ioe.getMessage());
                 stop();
-            }*/
+            }
        }
     }
     public void handle(byte[] msg) {
@@ -76,7 +76,7 @@ public class SheepClient implements Runnable{
     }
     public void start() throws IOException {  
         streamIn = new BufferedReader(new InputStreamReader(System.in));
-        streamOut = new PrintStream(new BufferedOutputStream(socket.getOutputStream()));
+        streamOut = new DataOutputStream(socket.getOutputStream());
         
         
         if (thread == null){
@@ -195,18 +195,18 @@ public class SheepClient implements Runnable{
                 (b[0] & 0xFF) << 24;
     }
     
-    private void sendToServer(char inputString){
+    private void sendToServer(char inputString) throws IOException{
         if(inputString == 'W' || inputString == 'w' ||
                         inputString == 'S' || inputString == 's' ||
                         inputString == 'A' || inputString == 'a' ||
                         inputString == 'D' || inputString == 'd') {
-                streamOut.println(inputString);
+                streamOut.writeChar(inputString);
         } else if(inputString == 'J' || inputString == 'j'){
             Sheep sheep = sheeps.get(socket.getLocalPort());                    
             Point sheepPosition = new Point(sheep.getxPosition(), sheep.getyPosition());
 
             if(!noGrass.contains(sheepPosition)){
-                streamOut.println(inputString);
+                streamOut.writeChar(inputString);
             }
         }
         streamOut.flush();

@@ -82,7 +82,7 @@ public class SheepServer implements Runnable{
       return -1;
     }
     
-    public synchronized void handle(int ID, String input) {
+    public synchronized void handle(int ID, char input) {
         try{
             /*if (input.equals(".bye")) {
                 clients[findClient(ID)].send(".bye".toCharArray());
@@ -145,7 +145,7 @@ public class SheepServer implements Runnable{
                 }
 
                 
-                sendToClients(socket.getPort(), "new");
+                sendToClients(socket.getPort(), 'n');
                 canvas.repaint();
 
                 
@@ -157,28 +157,28 @@ public class SheepServer implements Runnable{
             System.out.println("Client refused: maximum " + clients.length + " reached.");
     }
     
-    private void sendToClients(int ID, String input) {
+    private void sendToClients(int ID, char input) {
     	Sheep sheep = sheeps.get(ID);
         //System.out.println("input: " + input);
         switch(input){
-                case "W":
-                case "w":
+                case 'W':
+                case 'w':
                         sheep.goUp();
                         break;
-                case "S":
-                case "s":
+                case 'S':
+                case 's':
                         sheep.goDown();
                         break;
-                case "D":
-                case "d":
+                case 'D':
+                case 'd':
                         sheep.goRight();
                         break;
-                case "A":
-                case "a":
+                case 'A':
+                case 'a':
                         sheep.goLeft();
                         break;
-                case "J":
-                case "j":
+                case 'J':
+                case 'j':
                         noGrass.add(new Point(sheep.getxPosition(), sheep.getyPosition()));
                         ID = -1; //tells that the update is for the grass
                         break;

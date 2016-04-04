@@ -9,7 +9,7 @@ public class SheepServerThread extends Thread {
     private Socket socket = null;
     private SheepServer server   = null;
     private int ID = -1;
-    private BufferedReader streamIn =  null;
+    private DataInputStream streamIn =  null;
     private DataOutputStream streamOut = null;
 
     public SheepServerThread(SheepServer _server, Socket _socket) {  
@@ -23,7 +23,7 @@ public class SheepServerThread extends Thread {
         System.out.println("Server Thread " + ID + " running.");
         while (true){
             try {
-                server.handle(ID, streamIn.readLine());
+                server.handle(ID, streamIn.readChar());
             } catch(IOException ioe) { 
                 System.out.println(ID + " ERROR reading: " + ioe.getMessage());
                 server.remove(ID);
@@ -33,7 +33,7 @@ public class SheepServerThread extends Thread {
     }
     
     public void open() throws IOException {
-        streamIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        streamIn = new DataInputStream(socket.getInputStream());
         streamOut = new DataOutputStream(socket.getOutputStream());
     }
     public void close() throws IOException {
