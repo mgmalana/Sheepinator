@@ -49,14 +49,15 @@ public class SheepClient implements Runnable{
 
     }
     public void run() {  
+        Random random = new Random();
+        int secondsGap = random.nextInt(3) + 3;
         while (thread != null) {
             try {  
-                Random random = new Random();
 
                 //char inputString = streamIn.readLine().charAt(0);
                 char[] inputChoices = {'w', 's', 'a', 'd', 'j'};
                 char inputString = inputChoices[random.nextInt(inputChoices.length)];
-                sleep(5);
+                sleep(secondsGap);
                 
             	sendToServer(inputString);
             } catch(IOException ioe) {
