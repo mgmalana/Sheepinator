@@ -9,9 +9,11 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.net.*;
 import java.io.*;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -26,8 +28,8 @@ public class SheepServer implements Runnable{
     private int clientCount = 0;
     private SheepServerThread clients[] = new SheepServerThread[Sheep.MAX_NUM_SHEEP];
     private static final int SERVERPORT = 1234;
-    private HashMap<Integer, Sheep> sheeps = new HashMap<>();
-    private HashSet <Point> noGrass = new HashSet<>();
+    private ConcurrentHashMap<Integer, Sheep> sheeps = new ConcurrentHashMap<>();
+    private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
     
     private JFrame frame;
     private ImageCanvas canvas;
