@@ -56,8 +56,10 @@ public class SheepServerThread extends Thread {
     
     public void send(byte[] msg) {
         try {
-            streamOut.write(msg);
-            streamOut.flush();
+            if(streamOut != null){
+                streamOut.write(msg);
+                streamOut.flush();
+            }
 
         } catch (IOException ex) {
             System.out.println(ID + " ERROR reading: " + ex.getMessage());

@@ -33,15 +33,20 @@ public class SheepClient implements Runnable{
     private JFrame frame;
     private ImageCanvas canvas;
     private Sheep sheepClient = new Sheep();
+    private long[] startTime = new long[10];
+    private long[] endTime = new long[10];
+    private int startTimeIndex = 0;
+    private int endTimeIndex = 0;
     
     public SheepClient() {  
         System.out.println("Establishing connection. Please wait ...");
-        //initializeUI(); // uncomment this for no UI
+        //initializeUI(); // uncomment this for UI
 
         try {
             socket = new Socket(SERVERNAME, SERVERPORT);
             System.out.println("Connected: " + socket);
             start();
+            getStartTime();
         }
         catch(UnknownHostException uhe) {
             System.out.println("Host unknown: " + uhe.getMessage());
@@ -62,7 +67,7 @@ public class SheepClient implements Runnable{
                 char[] inputChoices = {'w', 's', 'a', 'd', 'j'};
                 char inputString = inputChoices[random.nextInt(inputChoices.length)];
                 sleep(secondsGap);
-                
+                getStartTime();
             	sendToServer(inputString);
             } catch(IOException ioe) {
                 System.out.println("Sending error: " + ioe.getMessage());
@@ -70,6 +75,15 @@ public class SheepClient implements Runnable{
             }
        }
     }
+    
+    public synchronized void getStartTime(){
+        if(startTimeIndex < startTime.length){
+            startTime[startTimeIndex] = System.currentTimeMillis();
+            startTimeIndex++;
+        }
+
+    }
+    
     public void handle(byte[] msg) {
         if (msg.equals(".bye")) {
             System.out.println("Good bye. Press RETURN to exit ...");
@@ -125,6 +139,17 @@ public class SheepClient implements Runnable{
         } else {
             if(key == socket.getLocalPort()) {
                 sheepClient.setXYPosition(x, y);
+                if(endTimeIndex < endTime.length){
+                    endTime[endTimeIndex] = System.currentTimeMillis();
+                    System.out.println("Latency: " + (endTime[endTimeIndex]- startTime[endTimeIndex])
+                            + " startTime: " + startTime[endTimeIndex] 
+                            + " endTime: " + endTime[endTimeIndex] 
+                            + " startIndex: " + startTimeIndex
+                            + " endTimeIndex: " + endTimeIndex);
+                    endTimeIndex++;
+                }
+
+
             }
             if(sheeps.containsKey(key)){
                 Sheep sheep = sheeps.get(key);
@@ -133,7 +158,7 @@ public class SheepClient implements Runnable{
                 sheeps.put(key, new Sheep(x, y));
             }
         }
-        //canvas.repaint(); //uncomment this for no UI
+        //canvas.repaint(); //uncomment this for UI
     }
     
         private int toInt(byte[] b) {
@@ -151,7 +176,6 @@ public class SheepClient implements Runnable{
                 streamOut.writeChar(inputString);
         } else if(inputString == 'J' || inputString == 'j'){
             Point sheepPosition = new Point(sheepClient.getxPosition(), sheepClient.getyPosition());
-
             if(!noGrass.contains(sheepPosition)){
                 streamOut.writeChar(inputString);
             }

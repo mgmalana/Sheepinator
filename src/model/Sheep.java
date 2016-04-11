@@ -11,7 +11,7 @@ public class Sheep {
 
 	public final static int SIZE_CELL = 3;
 	
-        public final static int MAX_NUM_SHEEP = 500;
+        public final static int MAX_NUM_SHEEP = 100;
         
         public final static int VALUE_FOR_REMOVE = 255;
         
