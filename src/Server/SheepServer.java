@@ -1,5 +1,6 @@
 package Server;
 
+import java.awt.Point;
 import java.io.IOException;
 import java.net.*; // Imported because the Socket class is needed
 import java.util.Collections;
@@ -7,8 +8,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import model.Connection;
  
 public class SheepServer {	
@@ -17,6 +16,7 @@ public class SheepServer {
     private static Set <Connection> clients = Collections.newSetFromMap(new ConcurrentHashMap<Connection,Boolean>());
     private DatagramSocket serverSocket;
     private ExecutorService executor;
+    private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
 
     
     public SheepServer(){
@@ -46,8 +46,13 @@ public class SheepServer {
     }
     
     public void sendToClients(Connection client, byte[] message){
-        byte[] toSendToClients = prepareToByteArray(client.getID(), message);
-
+        byte[] toSendToClients;
+        
+        if(client == null){
+            toSendToClients = prepareToByteArray(-1, message);
+        } else {
+            toSendToClients = prepareToByteArray(client.getID(), message);        
+        }
         for(Connection c : clients){
             
             if(!c.equals(client)){
@@ -93,6 +98,11 @@ public class SheepServer {
         return clients;
     }
 
+    public void addNoGrass(int x, int y){
+        noGrass.add(new Point(x, y));
+    }
+
+    
     public static void main(String args[]){ 
         System.out.println("Server started...");
         SheepServer server = new SheepServer();

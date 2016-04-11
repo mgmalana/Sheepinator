@@ -23,7 +23,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import model.Sheep;
 
-public class SheepClient  implements Runnable{
+public class SheepClientGUI  extends SheepClient implements Runnable{
     
     public static final int PORT = 1234;
     public static final String HOST = "localhost";
@@ -36,7 +36,7 @@ public class SheepClient  implements Runnable{
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
 
     
-    public SheepClient(){   
+    public SheepClientGUI(){   
         this.sheep = new Sheep();
         try {
             InetAddress ia = InetAddress.getByName(HOST);
@@ -45,7 +45,7 @@ public class SheepClient  implements Runnable{
         } catch (UnknownHostException | SocketException ex) {
             throw new RuntimeException("Error: " + ex.getMessage());
         }
-        //initializeUI(); // uncomment this for no UI
+        initializeUI(); // uncomment this for no UI
 
     }
     
@@ -105,12 +105,12 @@ public class SheepClient  implements Runnable{
     }
     
     public static void main(String args[]) { 
-        SheepClient sheepClient = new SheepClient();
+        SheepClientGUI sheepClient = new SheepClientGUI();
         sheepClient.start();
     }
     
     public void repaintCanvas(){
-//        canvas.repaint();
+        canvas.repaint();
     }
     
     private void initializeUI() {
