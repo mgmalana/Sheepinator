@@ -9,7 +9,7 @@ public class Sheep {
 	public final static int NUM_ROWS = 100;
 	public final static int NUM_COLS = 100;
 
-	public final static int SIZE_CELL = 7;
+	public final static int SIZE_CELL = 15;
 	
 	public Sheep() {
             Random randomizer = new Random();
