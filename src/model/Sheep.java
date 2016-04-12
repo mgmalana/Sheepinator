@@ -3,6 +3,8 @@ package model;
 import java.util.Random;
 
 public class Sheep {
+
+        public final static int MAX_NUM_SHEEP = 50;
 	private int xPosition = 0;
 	private int yPosition = 0;
 	
