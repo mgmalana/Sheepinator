@@ -1,4 +1,4 @@
-package Server;
+package Coordinator;
 
 import java.awt.Point;
 import java.io.IOException;
@@ -8,18 +8,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import model.ClientServerConnection;
+import model.ServerCoordinatorConnection;
  
-public class SheepServer {	
+public class SheepCoordinator {	
  
-    public static final int PORT = 1234;
-    private static Set <ClientServerConnection> clients = Collections.newSetFromMap(new ConcurrentHashMap<ClientServerConnection,Boolean>());
+    public static final int PORT = 1235;
     private DatagramSocket serverSocket;
     private ExecutorService executor;
-    private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
+    private static Set <ServerCoordinatorConnection> servers = Collections.newSetFromMap(new ConcurrentHashMap<ServerCoordinatorConnection,Boolean>());
 
     
-    public SheepServer(){
+    public SheepCoordinator(){
         try {
             serverSocket = new DatagramSocket(PORT);
         } catch (SocketException ex) {
@@ -29,9 +28,7 @@ public class SheepServer {
         executor = Executors.newFixedThreadPool(20);
     }
 
-    public void start() throws IOException{
-        SheepServerThread.setStaticSheepServer(this); //sets the static server
-        
+    public void start() throws IOException{        
         while(true) {
             // Create byte buffers to hold the messages to send and receive
             byte[] receiveData = new byte[1024];          
@@ -41,11 +38,11 @@ public class SheepServer {
             // Block until there is a packet to receive, then receive it  (into our empty packet)
             serverSocket.receive(receivePacket);
             // Extract the message from the packet and make it into a string, then trim off any end characters
-            executor.execute(new SheepServerThread(receivePacket));
+            executor.execute(new SheepCoordinatorThread(this, receivePacket));
         }
     }
     
-    public void sendToClients(ClientServerConnection client, byte[] message){
+    public void sendToServers(ServerCoordinatorConnection client, byte[] message){
         byte[] toSendToClients;
         
         if(client == null){
@@ -53,7 +50,7 @@ public class SheepServer {
         } else {
             toSendToClients = prepareToByteArray(client.getID(), message);        
         }
-        for(ClientServerConnection c : clients){
+        for(ServerCoordinatorConnection c : servers){
             
             if(!c.equals(client)){
                 try {
@@ -63,7 +60,7 @@ public class SheepServer {
                         // Send the echoed message
                     serverSocket.send(sendPacket);
                 } catch (IOException ex){
-                    System.out.println("Error: " + ex.getMessage());
+                    System.out.println("[SheepCoordinator] Error: " + ex.getMessage());
                 }
             }
         }
@@ -88,29 +85,30 @@ public class SheepServer {
             (byte)(value >> 8),
             (byte)value};
     }
-
-    
-    public void addClient(ClientServerConnection client){
-        clients.add(client);
-    }
-    
-    public Set <ClientServerConnection> getClients(){
-        return clients;
-    }
-
-    public void addNoGrass(int x, int y){
-        noGrass.add(new Point(x, y));
-    }
-
     
     public static void main(String args[]){ 
-        System.out.println("Server started...");
-        SheepServer server = new SheepServer();
+        System.out.println("[SheepCoordinator] started...");
+        SheepCoordinator server = new SheepCoordinator();
         try {
             server.start();
         } catch (IOException ex) {
-            throw new RuntimeException("Error: " + ex.getMessage());
+            throw new RuntimeException("[SheepCoordinator] Error: " + ex.getMessage());
         }
 
+    }
+
+    void handle(DatagramPacket receivePacket) {
+            byte[] serverMessage = receivePacket.getData();
+            System.out.println("[SheepCoordinator] Message Received: " + serverMessage);
+        
+            ServerCoordinatorConnection server = new ServerCoordinatorConnection(receivePacket.getAddress().getHostAddress(), receivePacket.getPort());                 
+            
+            if(receivePacket.getLength()==1 && !servers.contains(server)){
+                System.out.println("[SheepCoordinator] Adding "+ server.getAddress() + " with port " + server.getPort());
+                servers.add(server);
+                server.setID(ServerCoordinatorConnection.getNextID());
+            }
+
+            //sendToServers(server, serverMessage);
     }
 }

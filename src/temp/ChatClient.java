@@ -55,7 +55,7 @@ class SenderThread extends Thread {
         	byte[] data = new byte[1024];
         	data = "".getBytes();
         	DatagramPacket blankPacket = new DatagramPacket(data,data.length , serverIPAddress, serverport);
-            udpClientSocket.send(blankPacket);
+                udpClientSocket.send(blankPacket);
             
         	// Create input stream
             BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));

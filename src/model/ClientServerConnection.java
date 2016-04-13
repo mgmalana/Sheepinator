@@ -7,14 +7,14 @@ import java.util.Objects;
  *
  * @author mgmalana
  */
-public class Connection {
+public class ClientServerConnection {
     private String address;
     private int port;
     private Sheep sheep;
     private int id;
     public static int ID_COUNT = 0;
     
-    public Connection(String address, int port) {
+    public ClientServerConnection(String address, int port) {
         this.address = address;
         this.port = port;
     }
@@ -52,11 +52,11 @@ public class Connection {
         if(o == null){             
             return false;
         }
-        if(!(o instanceof Connection)){
+        if(!(o instanceof ClientServerConnection)){
             return false;
         }
 
-        Connection other = (Connection) o;
+        ClientServerConnection other = (ClientServerConnection) o;
 
         if(!this.address.equals(other.address))
             return false;

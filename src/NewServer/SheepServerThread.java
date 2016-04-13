@@ -1,4 +1,4 @@
-package Server;
+package NewServer;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -21,7 +21,7 @@ public class SheepServerThread implements Runnable{
     public void run() {
             byte[] clientMessage = receivePacket.getData();
             int isSheep = clientMessage[0] & 0xFF;
-            System.out.println(clientMessage);
+            System.out.println("[SheepServer] Message Received: " + clientMessage);
             clientMessage = new byte[]{clientMessage[1], clientMessage[2]};
             if(isSheep == 0){ //if grass yung input
                 sheepServer.sendToClients(null, clientMessage);
@@ -43,7 +43,7 @@ public class SheepServerThread implements Runnable{
                 }       
                 
                 if(isClientNew){
-                    System.out.println("Adding "+ client.getAddress() + " with port " + client.getPort());
+                    System.out.println("[SheepServer] Adding "+ client.getAddress() + " with port " + client.getPort());
                     sheepServer.addClient(client);
                     client.setSheep(new Sheep(x, y));
                     client.setID(ClientServerConnection.getNextID());
