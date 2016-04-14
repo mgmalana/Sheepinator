@@ -48,6 +48,7 @@ class ServerSenderThread implements Runnable {
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIPAddress, serverport);
 
                 udpClientSocket.send(sendPacket);
+                System.out.println("sent to coordinator: " + sendData.length);
             }
 //            Thread.yield();
         }

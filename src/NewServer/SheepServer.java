@@ -23,6 +23,7 @@ public class SheepServer {
  
     public static final int COORDINATOR_PORT = 1235;
     public static final String HOST = "localhost";
+    public static final int WAIT_SEND_COORDINATOR = 3000; //3 seconds to wait before sending
     public static final int SIZE_FROM_CLIENT =3;
     
     private ServerReceiverThread receiver;
@@ -63,7 +64,7 @@ public class SheepServer {
         receiver.start();
         
         registerToCoordinator();
-        scheduleExecutor.scheduleWithFixedDelay(sender, 0, 400, TimeUnit.MILLISECONDS);
+        scheduleExecutor.scheduleWithFixedDelay(sender, 0, 3000, TimeUnit.MILLISECONDS);
         
         while(true) {
             // Create byte buffers to hold the messages to send and receive

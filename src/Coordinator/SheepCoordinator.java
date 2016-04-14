@@ -37,6 +37,7 @@ public class SheepCoordinator {
 
             // Block until there is a packet to receive, then receive it  (into our empty packet)
             serverSocket.receive(receivePacket);
+            System.out.println("Packet size received: " + receivePacket.getLength());
             // Extract the message from the packet and make it into a string, then trim off any end characters
             executor.execute(new SheepCoordinatorThread(this, receivePacket));
         }
@@ -99,7 +100,7 @@ public class SheepCoordinator {
 
     void handle(DatagramPacket receivePacket) {
             byte[] serverMessage = receivePacket.getData();
-            System.out.println("[SheepCoordinator] Message Received: " + serverMessage);
+            System.out.println(serverMessage);
         
             ServerCoordinatorConnection server = new ServerCoordinatorConnection(receivePacket.getAddress().getHostAddress(), receivePacket.getPort());                 
             
