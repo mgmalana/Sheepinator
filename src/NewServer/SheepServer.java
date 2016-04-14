@@ -18,13 +18,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import model.ClientServerConnection;
+import model.Message;
  
 public class SheepServer {	
  
     public static final int COORDINATOR_PORT = 1235;
     public static final String HOST = "localhost";
     public static final int WAIT_SEND_COORDINATOR = 3000; //3 seconds to wait before sending
-    public static final int SIZE_FROM_CLIENT =3;
+    public static final int SIZE_TO_SEND_TO_COORDINATOR = 6;
+    public static final int SIZE_FROM_CLIENT = 3;
     
     private ServerReceiverThread receiver;
     private ServerSenderThread sender;
@@ -33,7 +35,7 @@ public class SheepServer {
     private DatagramSocket serverSocket;
     private ExecutorService executor;
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
-    private List<byte[]> toSendToCoordinator;
+    private List<Message> messagesToSendCoordinator;
     private DatagramSocket udpClientSocket;
     
     public SheepServer(){
@@ -52,12 +54,12 @@ public class SheepServer {
         }
         
         executor = Executors.newFixedThreadPool(20);
-        toSendToCoordinator = new LinkedList<>();
+        messagesToSendCoordinator = new LinkedList<>();
     }
 
     public void start() throws IOException{
         SheepServerThread.setStaticSheepServer(this); //sets the static server
-        ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService scheduleExecutor = Executors.newScheduledThreadPool(10);
 
         
         //sender.start();
@@ -75,19 +77,11 @@ public class SheepServer {
             //scheduleExecutor
             // Block until there is a packet to receive, then receive it  (into our empty packet)
             serverSocket.receive(receivePacket);
-            
-            byte[] bytesToSendToCoordinator = new byte[receivePacket.getLength()];
+            byte[] bytesToSendToCoordinator = new byte[SIZE_FROM_CLIENT];
             System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), bytesToSendToCoordinator, 0, receivePacket.getLength());
-            
-            this.addToSendToCoordinatorQueue(bytesToSendToCoordinator);
-            executor.execute(new SheepServerThread(receivePacket));
+            messagesToSendCoordinator.add(new Message(receivePacket.getAddress().getHostAddress(), receivePacket.getPort(), bytesToSendToCoordinator));
+            //executor.execute(new SheepServerThread(receivePacket));
         }
-    }
-    
-    
-    
-    public List<byte[]> getToSendToCoordinator(){
-        return toSendToCoordinator;
     }
     
     public void sendToClients(ClientServerConnection client, byte[] message){
@@ -147,14 +141,10 @@ public class SheepServer {
         noGrass.add(new Point(x, y));
     }
 
-    public synchronized byte[][] emptyToSendToCoordinator(){
-        byte[][] temp = toSendToCoordinator.toArray(new byte[toSendToCoordinator.size()][SIZE_FROM_CLIENT]);
-        toSendToCoordinator.clear();
+    public synchronized Message[] emptyToSendToCoordinator(){
+        Message[] temp = messagesToSendCoordinator.toArray(new Message[messagesToSendCoordinator.size()]);
+        messagesToSendCoordinator.clear();
         return temp;
-    }
-    
-    public synchronized void addToSendToCoordinatorQueue(byte[] toSend){
-        toSendToCoordinator.add(toSend);
     }
     
     private void registerToCoordinator() throws IOException {

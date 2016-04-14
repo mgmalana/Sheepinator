@@ -37,33 +37,9 @@ public class SheepCoordinator {
 
             // Block until there is a packet to receive, then receive it  (into our empty packet)
             serverSocket.receive(receivePacket);
-            System.out.println("Packet size received: " + receivePacket.getLength());
+            //System.out.println("Packet size received: " + receivePacket.getLength());
             // Extract the message from the packet and make it into a string, then trim off any end characters
             executor.execute(new SheepCoordinatorThread(this, receivePacket));
-        }
-    }
-    
-    public void sendToServers(ServerCoordinatorConnection client, byte[] message){
-        byte[] toSendToClients;
-        
-        if(client == null){
-            toSendToClients = prepareToByteArray(-1, message);
-        } else {
-            toSendToClients = prepareToByteArray(client.getID(), message);        
-        }
-        for(ServerCoordinatorConnection c : servers){
-            
-            if(!c.equals(client)){
-                try {
-                    // Create a DatagramPacket to send, using the buffer, the clients IP address, and the clients port
-                    InetAddress address = InetAddress.getByName(c.getAddress());
-                    DatagramPacket sendPacket = new DatagramPacket(toSendToClients, toSendToClients.length, address, c.getPort()); 
-                        // Send the echoed message
-                    serverSocket.send(sendPacket);
-                } catch (IOException ex){
-                    System.out.println("[SheepCoordinator] Error: " + ex.getMessage());
-                }
-            }
         }
     }
     
@@ -98,18 +74,41 @@ public class SheepCoordinator {
 
     }
 
-    void handle(DatagramPacket receivePacket) {
+    public void handle(DatagramPacket receivePacket) {
             byte[] serverMessage = receivePacket.getData();
-            System.out.println(serverMessage);
-        
             ServerCoordinatorConnection server = new ServerCoordinatorConnection(receivePacket.getAddress().getHostAddress(), receivePacket.getPort());                 
             
             if(receivePacket.getLength()==1 && !servers.contains(server)){
-                System.out.println("[SheepCoordinator] Adding "+ server.getAddress() + " with port " + server.getPort());
-                servers.add(server);
-                server.setID(ServerCoordinatorConnection.getNextID());
+                addServerCoordinatorConnection(server);
+            } else {
+                sendToServers(server, serverMessage);
             }
-
-            //sendToServers(server, serverMessage);
     }
+    
+    public void addServerCoordinatorConnection(ServerCoordinatorConnection c){
+        System.out.println("[SheepCoordinator] Adding "+ c.getAddress() + " with port " + c.getPort());
+        if(servers.add(c)){
+            c.setID(ServerCoordinatorConnection.getNextID());
+        }
+    }
+    
+    public void sendToServers(ServerCoordinatorConnection client, byte[] message){
+        byte[] toSendToClients = prepareToByteArray(client.getID(), message);        
+        
+        for(ServerCoordinatorConnection c : servers){
+            
+            if(!c.equals(client)){
+                try {
+                    // Create a DatagramPacket to send, using the buffer, the clients IP address, and the clients port
+                    InetAddress address = InetAddress.getByName(c.getAddress());
+                    DatagramPacket sendPacket = new DatagramPacket(toSendToClients, toSendToClients.length, address, c.getPort()); 
+                        // Send the echoed message
+                    serverSocket.send(sendPacket);
+                } catch (IOException ex){
+                    System.out.println("[SheepCoordinator] Error: " + ex.getMessage());
+                }
+            }
+        }
+    }
+    
 }

@@ -1,7 +1,5 @@
 package model;
 
-import static model.ClientServerConnection.ID_COUNT;
-
 /**
  *
  * @author mgmalana
