@@ -17,8 +17,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import model.Sheep;
@@ -53,8 +51,8 @@ public class SheepClient  implements Runnable{
         while(currentIndex + 6 <= msg.length){
             byte [] keyByteArray = Arrays.copyOfRange(msg, 0 + currentIndex, 4 + currentIndex);
             int key = toInt(keyByteArray);
-            int x = msg[4] & 0xFF;
-            int y = msg[5] & 0xFF;
+            int x = msg[4 + currentIndex] & 0xFF;
+            int y = msg[5 + currentIndex] & 0xFF;
 
 
             System.out.println("sheep: " + key + " x: " + x + " y: " + y);
@@ -65,7 +63,11 @@ public class SheepClient  implements Runnable{
                 Sheep sheepThis = sheeps.get(key);
                 sheepThis.setXYPosition(x, y);
             } else{
-                sheeps.put(key, new Sheep(x, y));
+                Sheep temp = new Sheep(x, y);
+                sheeps.put(key, temp);
+                if(sheep == null && key == id){
+                    sheep = temp;
+                }
             }
 
             repaintCanvas();
@@ -197,8 +199,9 @@ public class SheepClient  implements Runnable{
             	    Sheep value = entry.getValue();
                     g.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
             	}
-                g.drawImage(imgSelf, sheeps.get(id).getxPosition()*Sheep.SIZE_CELL, sheeps.get(id).getyPosition()*Sheep.SIZE_CELL, this);
-
+                if(sheep != null){
+                    g.drawImage(imgSelf, sheeps.get(id).getxPosition()*Sheep.SIZE_CELL, sheeps.get(id).getyPosition()*Sheep.SIZE_CELL, this);
+                }
             }
         }
 

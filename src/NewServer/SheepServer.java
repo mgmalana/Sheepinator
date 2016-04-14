@@ -186,7 +186,15 @@ public class SheepServer {
                 }
             } else {
                 c = clients.get(toInt(b.getMessage()));
-                updateScene(c, (char)b.getMessage()[4]);
+                char input = (char)b.getMessage()[4];
+                updateScene(c, input);
+                
+                if(input == 'j'){
+                    outputStream.write(intToByteArray(-1));
+                    outputStream.write(new byte[]{(byte)c.getSheep().getxPosition()});
+                    outputStream.write(new byte[]{(byte)c.getSheep().getyPosition()});
+                    continue;
+                }
             }
             outputStream.write(intToByteArray(c.getId()));
             outputStream.write(new byte[]{(byte)c.getSheep().getxPosition()});
