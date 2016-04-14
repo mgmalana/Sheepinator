@@ -1,4 +1,4 @@
-package NewServer;
+package Server;
 
 import java.awt.Point;
 import java.io.ByteArrayOutputStream;
@@ -8,6 +8,7 @@ import java.net.DatagramSocket; // Imported because the Socket class is needed
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,10 +32,15 @@ public class SheepServer {
     public static final int WAIT_SEND_COORDINATOR = 3000; //3 seconds to wait before sending
     public static final int SIZE_TO_SEND_TO_COORDINATOR = 6;
     
+    public static final int NUM_THREADS_RECEIVER = 5; //this is actually for sending rin. forwarding from coordinator
+    public static final int NUM_THREADS_SENDER = 10;
+
+    
     private ServerReceiverThread receiver;
     private ServerSenderThread sender;
     public static final int PORT = 1234;
     private static ConcurrentHashMap <Integer, ClientServerConnection> clients = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap <Integer, Sheep> sheepsFromOtherServers = new ConcurrentHashMap<>();
     private DatagramSocket serverSocket;
     private ExecutorService executor;
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
@@ -184,7 +190,7 @@ public class SheepServer {
                 } catch (UnknownHostException ex) {
                     System.err.println("Error: " + ex.getMessage());
                 }
-            } else {
+            } else{
                 c = clients.get(toInt(b.getMessage()));
                 char input = (char)b.getMessage()[4];
                 updateScene(c, input);
@@ -248,6 +254,36 @@ public class SheepServer {
             throw new RuntimeException("[SheepServer] Error: " + ex.getMessage());
         }
 
+    }
+
+    public void updateSceneAndForwardToClient(byte[] receiveData) {
+        int currentIndex = 0;
+        while(currentIndex + 6 <= receiveData.length){
+            byte [] keyByteArray = Arrays.copyOfRange(receiveData, 0 + currentIndex, 4 + currentIndex);
+            int key = toInt(keyByteArray);
+            int x = receiveData[4 + currentIndex] & 0xFF;
+            int y = receiveData[5 + currentIndex] & 0xFF;
+
+            System.out.println("sheep: " + key + " x: " + x + " y: " + y);
+
+            if(key == -1){
+                noGrass.add(new Point(x, y));
+            } else if(sheepsFromOtherServers.contains(key)){
+                Sheep sheepThis = sheepsFromOtherServers.get(key);
+                sheepThis.setXYPosition(x, y);
+            } else{
+                Sheep temp = new Sheep(x, y);
+                sheepsFromOtherServers.put(key, temp);
+            }
+
+            currentIndex+=6;
+        }
+        
+        try {
+            sender.sendToClients(receiveData);
+        } catch (IOException ex) {
+            Logger.getLogger(SheepServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     

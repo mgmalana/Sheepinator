@@ -1,4 +1,4 @@
-package NewServer;
+package Server;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;

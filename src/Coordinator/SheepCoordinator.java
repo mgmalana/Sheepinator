@@ -35,10 +35,7 @@ public class SheepCoordinator {
             // Create an empty DatagramPacket packet
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
-            // Block until there is a packet to receive, then receive it  (into our empty packet)
-            serverSocket.receive(receivePacket);
-            //System.out.println("Packet size received: " + receivePacket.getLength());
-            // Extract the message from the packet and make it into a string, then trim off any end characters
+            serverSocket.receive(receivePacket); // Block until there is a packet to receive, then receive it  (into our empty packet)
             executor.execute(new SheepCoordinatorThread(this, receivePacket));
         }
     }
@@ -94,6 +91,7 @@ public class SheepCoordinator {
     
     public void sendToServers(ServerCoordinatorConnection client, byte[] message){
         byte[] toSendToClients = prepareToByteArray(client.getID(), message);        
+        System.out.println("Message sending to servers: " + message);
         
         for(ServerCoordinatorConnection c : servers){
             

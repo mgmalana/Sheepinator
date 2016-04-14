@@ -19,6 +19,10 @@ public class ClientServerConnection {
         this.port = port;
         this.id = id;
     }
+    
+    public ClientServerConnection(int id){
+        this.id = id;
+    }
 
     public InetAddress getAddress() {
         return address;

@@ -1,9 +1,12 @@
-package NewServer;
+package Server;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import model.Message;
 
 /**
@@ -17,7 +20,7 @@ public class ServerReceiverThread extends Thread {
     private DatagramSocket udpClientSocket;
     private boolean stopped = false;
     private SheepServer sheepServer;
-    
+
     public ServerReceiverThread(SheepServer sheepServer, DatagramSocket ds) throws SocketException {
         this.udpClientSocket = ds;
         this.sheepServer = sheepServer;
@@ -27,15 +30,15 @@ public class ServerReceiverThread extends Thread {
         this.stopped = true;
     }
 
+    @Override
     public void run() {
- 
-        // Create a byte buffer/array for the receive Datagram packet
- 
+        Executor executor = Executors.newFixedThreadPool(20);
+        
         while (true) {            
             if (stopped)
                 return;
             
-            byte[] receiveData = new byte[5];
+            byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             try {
                 udpClientSocket.receive(receivePacket);
@@ -43,11 +46,19 @@ public class ServerReceiverThread extends Thread {
                 if(receivePacket.getLength() == 1){
                     receiveData = new byte[1];
                     System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
+                } else if(receivePacket.getLength() == 5){
+                    receiveData = new byte[5];
+                    System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
+                } else if(receivePacket.getLength() > 5){
+                    receiveData = new byte[receivePacket.getLength()];
+                    System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
+                    ServerForwarder forward = new ServerForwarder(sheepServer, receiveData);
+                    executor.execute(forward);
                 }
                 sheepServer.addMessage(new Message(receivePacket.getAddress().getHostAddress(), receivePacket.getPort(), receiveData));             
             } catch (IOException ex) {
                 System.err.println("Error: " + ex.getMessage());
             }
         }
-    }
+    }    
 }

@@ -1,4 +1,4 @@
-package NewServer;
+package Server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,10 +47,7 @@ class ServerSenderThread extends Thread {
                     byte[] sendData = server.handleMessages();
                     
                     if(sendData.length > 0){
-                        for(ClientServerConnection c : server.getClients().values()){
-                            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, c.getAddress(), c.getPort());
-                            udpClientSocket.send(sendPacket);
-                        }
+                        sendToClients(sendData);
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIPAddress , SheepServer.COORDINATOR_PORT);
                         udpClientSocket.send(sendPacket);
                     }
@@ -59,6 +56,13 @@ class ServerSenderThread extends Thread {
                 }
             }
        
+    }
+    
+    public void sendToClients(byte[] sendData) throws IOException{
+        for(ClientServerConnection c : server.getClients().values()){
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, c.getAddress(), c.getPort());
+            udpClientSocket.send(sendPacket);
+        }
     }
 }   
  
