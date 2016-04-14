@@ -8,18 +8,19 @@ import java.util.Objects;
  * @author mgmalana
  */
 public class ClientServerConnection {
-    private String address;
+    private InetAddress address;
     private int port;
     private Sheep sheep;
+    private static int ID_COUNT = 0;
     private int id;
-    public static int ID_COUNT = 0;
     
-    public ClientServerConnection(String address, int port) {
+    public ClientServerConnection(InetAddress address, int port, int id) {
         this.address = address;
         this.port = port;
+        this.id = id;
     }
 
-    public String getAddress() {
+    public InetAddress getAddress() {
         return address;
     }
 
@@ -27,10 +28,10 @@ public class ClientServerConnection {
         return port;
     }
     
-    public int getID(){
+    public int getId() {
         return id;
     }
-    
+        
     public Sheep getSheep(){
         return sheep;
     }
@@ -38,11 +39,7 @@ public class ClientServerConnection {
     public void setSheep(Sheep sheep) {
         this.sheep = sheep;
     }
-    
-    public void setID(int id){
-        this.id = id;
-    }
-    
+        
     public static synchronized int getNextID(){
         return ID_COUNT++;
     }

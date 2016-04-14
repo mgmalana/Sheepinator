@@ -18,7 +18,7 @@ public class SheepServerThread implements Runnable{
     }
     
     @Override
-    public void run() {
+    public void run() {/*
             byte[] clientMessage = receivePacket.getData();
             int isSheep = clientMessage[0] & 0xFF;
             System.out.println("[SheepServer] Message Received: " + clientMessage);
@@ -52,7 +52,7 @@ public class SheepServerThread implements Runnable{
                 sheepServer.sendToClients(client, clientMessage);
 
             }
-
+*/
             
             // Message		
             //System.out.println(clientMessage);

@@ -6,27 +6,30 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import model.ClientServerConnection;
 import model.Message;
 
 /**
  *
  * @author mgmalana
  */
-class ServerSenderThread implements Runnable {
+class ServerSenderThread extends Thread {
  
     private InetAddress serverIPAddress;
     private DatagramSocket udpClientSocket;
     private boolean stopped = false;
-    private int serverport;
+    private DatagramSocket serverport;
     private SheepServer server;
     
-    public ServerSenderThread(SheepServer server, InetAddress address, int serverport) throws SocketException {
+    public ServerSenderThread(SheepServer server, InetAddress address, DatagramSocket serverSocket) throws SocketException {
         this.serverIPAddress = address;
-        this.serverport = serverport;
+        this.serverport = serverSocket;
         this.server = server;
         // Create client DatagramSocket
-        this.udpClientSocket = new DatagramSocket();
-        this.udpClientSocket.connect(serverIPAddress, serverport);
+        this.udpClientSocket = serverport;
     }
     public void halt() {
         this.stopped = true;
@@ -35,68 +38,27 @@ class ServerSenderThread implements Runnable {
         return this.udpClientSocket;
     }
  
-    public void run() {       
-        try {
-            ByteArrayOutputStream toSendList = new ByteArrayOutputStream();            
-                     
-            for(Message b : server.emptyToSendToCoordinator()){
-                byte[] clientMessage = b.getMessage();
-                int isSheep = clientMessage[0] & 0xFF;
-                clientMessage = new byte[]{clientMessage[1], clientMessage[2]};
-                
-                if(isSheep == 0) {
-                    
-                } else {
-                
-                }
-                
-            }        
-            if(toSendList.size()!=0){
-                byte[] sendData = toSendList.toByteArray();
-
-                // Create a DatagramPacket with the data, IP address and port number
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIPAddress, serverport);
-
-                udpClientSocket.send(sendPacket);
-                System.out.println("sent to coordinator: " + sendData.length);
-            }
-            /*
+    public void run() {                     
             
-            if(isSheep == 0){ //if grass yung input
-                sheepServer.sendToClients(null, clientMessage);
+            while(true){
 
-                //sheepServer.addNoGrass(x, y); //TODO: idk pabagal lang sya eh
-            } else { //if sheep movement
-                // Get the port number which the recieved connection came from
-                // Get the IP address and the the port number which the received connection came from            
-                ClientServerConnection client = new ClientServerConnection(receivePacket.getAddress().getHostAddress(), receivePacket.getPort());                 
-                boolean isClientNew = true;            
-                int x = clientMessage[0] & 0xFF;
-                int y = clientMessage[1] & 0xFF;
-                for(ClientServerConnection c : sheepServer.getClients()){
-                    if(c.equals(client)){
-                        client = c;
-                        isClientNew = false;
-                        break;
+                
+                try {
+                    byte[] sendData = server.handleMessages();
+                    
+                    if(sendData.length > 0){
+                        for(ClientServerConnection c : server.getClients().values()){
+                            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, c.getAddress(), c.getPort());
+                            udpClientSocket.send(sendPacket);
+                        }
+                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIPAddress , SheepServer.COORDINATOR_PORT);
+                        udpClientSocket.send(sendPacket);
                     }
-                }       
-                
-                if(isClientNew){
-                    System.out.println("[SheepServer] Adding "+ client.getAddress() + " with port " + client.getPort());
-                    sheepServer.addClient(client);
-                    client.setSheep(new Sheep(x, y));
-                    client.setID(ClientServerConnection.getNextID());
+                } catch (IOException ex) {
+                    Logger.getLogger(ServerSenderThread.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
-                sheepServer.sendToClients(client, clientMessage);
-
             }
-            */
-//            Thread.yield();
-        }
-        catch (IOException ex) {
-            System.err.println(ex);
-        }
+       
     }
 }   
  

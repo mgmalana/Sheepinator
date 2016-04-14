@@ -20,16 +20,14 @@ class SenderThread extends Thread {
     private DatagramSocket udpClientSocket;
     private boolean stopped = false;
     private int serverport;
-    private Sheep sheep;
     private SheepClient sheepClient;
     
-    public SenderThread(SheepClient sheepClient, Sheep sheep, InetAddress address, int serverport) throws SocketException {
+    public SenderThread(SheepClient sheepClient, InetAddress address, int serverport) throws SocketException {
         this.serverIPAddress = address;
         this.serverport = serverport;
         // Create client DatagramSocket
         this.udpClientSocket = new DatagramSocket();
         this.udpClientSocket.connect(serverIPAddress, serverport);
-        this.sheep = sheep;
         this.sheepClient = sheepClient;
     }
     public void halt() {
@@ -43,9 +41,7 @@ class SenderThread extends Thread {
         try {    
             sendInitialPositionToServer();
             Random random = new Random();
-
-            // Create input stream
-            BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+                        
             while (true) 
             {
                 if (stopped)
@@ -61,7 +57,7 @@ class SenderThread extends Thread {
                 } catch(InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
-
+                
                 /*
                 if (clientMessage.equals(".")){
                     break;
@@ -73,20 +69,18 @@ class SenderThread extends Thread {
                 }
                 char inputChar = clientMessage.charAt(0);
                 */
+                
                 if(inputChar != 'a' || inputChar != 'w' 
                         || inputChar != 's' || inputChar != 'd'
                         || inputChar != 'j'){
-                    //move sheep according to input
-                    moveSheep(inputChar);
-                    byte[] sendData = getSheepPositionInBytes(inputChar == 'j');
-                    sheepClient.repaintCanvas();
+                    //move sheep according to input                    
+                    byte[] sendData = sheepClient.prepareSendToServer(inputChar);
                     
                     // Create a DatagramPacket with the data, IP address and port number
                     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIPAddress, serverport);
 
-                    // Send the UDP packet to server
-                    //System.out.println("I just sent: "+sendData);
                     udpClientSocket.send(sendPacket);
+                    System.out.println("Message sent: " + sendData);
                 }
  
                 Thread.yield();
@@ -97,42 +91,22 @@ class SenderThread extends Thread {
         }
     }
 
-    private byte[] getSheepPositionInBytes(boolean isGrass) {
-        if(isGrass){
-            return new byte[]{(byte)0,(byte)sheep.getxPosition(), (byte)sheep.getyPosition()};
-        } else {
-            return new byte[]{(byte)1,(byte)sheep.getxPosition(), (byte)sheep.getyPosition()};
-        }
-    }
-
     private void sendInitialPositionToServer() throws IOException {
-            byte[] data = getSheepPositionInBytes(false);
-            DatagramPacket blankPacket = new DatagramPacket(data,data.length , serverIPAddress, serverport);
-            udpClientSocket.send(blankPacket);
-    }
+            //send out an empty one first
+            DatagramPacket sendPacket = new DatagramPacket(new byte[]{(byte)'0'}, 1, serverIPAddress, serverport);
 
-    private void moveSheep(char input) {
-        switch(input){
-            case 'w':
-                    sheep.goUp();
-                    break;
-            case 's':
-                    sheep.goDown();
-                    break;
-            case 'd':
-                    sheep.goRight();
-                    break;
-            case 'a':
-                    sheep.goLeft();
-                    break;
-            case 'J':
-            case 'j':
-                    sheepClient.addNoGrass(sheep.getxPosition(), sheep.getyPosition());
-                    //ID = -1; //tells that the update is for the grass
-                    break;
-
-        }
-
+            // Send the UDP packet to server
+            //System.out.println("I just sent: "+sendData);
+            udpClientSocket.send(sendPacket);
+            byte[] receiveData = new byte[4];
+            
+            sendPacket = new DatagramPacket(receiveData, receiveData.length);
+            
+            do{
+                udpClientSocket.receive(sendPacket);
+            } while(sendPacket.getLength() != 4);
+            
+            sheepClient.setIdAndStartReceiving(receiveData);
     }
 }   
  

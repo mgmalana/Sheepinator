@@ -25,11 +25,9 @@ public class ReceiverThread extends Thread {
     }
  
     public void run() {
- 
-        // Create a byte buffer/array for the receive Datagram packet
-        byte[] receiveData = new byte[6];
- 
-        while (true) {            
+        while (true) {    
+            byte[] receiveData = new byte[1024];
+
             if (stopped)
                 return;
  
@@ -39,6 +37,9 @@ public class ReceiverThread extends Thread {
             try {
                 // Receive a packet from the server (blocks until the packets are received)
                 udpClientSocket.receive(receivePacket);
+                receiveData = new byte[receivePacket.getLength()];
+                System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
+
                 sheepClient.updateScene(receiveData);
                 
                 // Extract the reply from the DatagramPacket      
