@@ -23,7 +23,7 @@ import model.Sheep;
 
 public class SheepClient  implements Runnable{
     
-    public static final int PORT = 1236;
+    public static final int PORT = 1234;
     public static final String HOST = "localhost";
     private ReceiverThread receiver;
     private SenderThread sender;

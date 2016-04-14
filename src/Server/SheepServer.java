@@ -117,9 +117,17 @@ public class SheepServer {
 
         for(Point p: noGrass){
             outputStream.write(intToByteArray(-1));
-            outputStream.write(new byte[]{(byte)p.x});
-            outputStream.write(new byte[]{(byte)p.y});
+            outputStream.write((byte)p.x);
+            outputStream.write((byte)p.y);
         }
+        /*
+        for(ClientServerConnection client: clients.values()){
+            outputStream.write(intToByteArray(client.getId()));
+            outputStream.write((byte)client.getSheep().getxPosition());
+            outputStream.write((byte)client.getSheep().getyPosition());
+
+        }
+        */
         sendData = outputStream.toByteArray();
         sendPacket = new DatagramPacket(sendData, sendData.length, c.getAddress(), c.getPort());
         try {
@@ -130,30 +138,6 @@ public class SheepServer {
 
         
         return c;
-    }
-    
-    public void sendToClients(ClientServerConnection client, byte[] message){
-        byte[] toSendToClients;
-        /*
-        if(client == null){
-            toSendToClients = prepareToByteArray(-1, message);
-        } else {
-            toSendToClients = prepareToByteArray(client.getID(), message);        
-        }
-        for(ClientServerConnection c : clients.values()){
-            
-            if(!c.equals(client)){
-                try {
-                    // Create a DatagramPacket to send, using the buffer, the clients IP address, and the clients port
-                    InetAddress address = InetAddress.getByName(c.getAddress());
-                    DatagramPacket sendPacket = new DatagramPacket(toSendToClients, toSendToClients.length, address, c.getPort()); 
-                        // Send the echoed message
-                    serverSocket.send(sendPacket);
-                } catch (IOException ex){
-                    System.out.println("Error: " + ex.getMessage());
-                }
-            }
-        }*/
     }
     
     private byte[] prepareToByteArray(int ID, byte[] message){

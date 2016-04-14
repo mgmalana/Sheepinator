@@ -47,16 +47,18 @@ public class ServerReceiverThread extends Thread {
                 if(receivePacket.getLength() == 1){
                     receiveData = new byte[1];
                     System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
+                    sheepServer.addMessage(new Message(receivePacket.getAddress().getHostAddress(), receivePacket.getPort(), receiveData));             
+
                 } else if(receivePacket.getLength() == 5){
                     receiveData = new byte[5];
                     System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
+                    sheepServer.addMessage(new Message(receivePacket.getAddress().getHostAddress(), receivePacket.getPort(), receiveData));             
                 } else if(receivePacket.getLength() > 5){
                     receiveData = new byte[receivePacket.getLength()];
                     System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
                     ServerForwarder forward = new ServerForwarder(sheepServer, receiveData);
                     executor.execute(forward);
                 }
-                sheepServer.addMessage(new Message(receivePacket.getAddress().getHostAddress(), receivePacket.getPort(), receiveData));             
             } catch (IOException ex) {
                 System.err.println("Error: " + ex.getMessage());
             }
