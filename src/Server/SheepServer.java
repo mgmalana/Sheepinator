@@ -35,10 +35,11 @@ public class SheepServer {
     public static final int NUM_THREADS_RECEIVER = 5; //this is actually for sending rin. forwarding from coordinator
     public static final int NUM_THREADS_SENDER = 10;
 
+    public int PORT = 1234;
+
     
     private ServerReceiverThread receiver;
     private ServerSenderThread sender;
-    public static final int PORT = 1234;
     private static ConcurrentHashMap <Integer, ClientServerConnection> clients = new ConcurrentHashMap<>();
     private static ConcurrentHashMap <Integer, Sheep> sheepsFromOtherServers = new ConcurrentHashMap<>();
     private DatagramSocket serverSocket;
@@ -47,7 +48,8 @@ public class SheepServer {
     private List<Message> messagesToSendCoordinator;
     private DatagramSocket udpClientSocket;
     
-    public SheepServer(){
+    public SheepServer(int port){
+        PORT = port;
         try {
             serverSocket = new DatagramSocket(PORT);
         } catch (SocketException ex) {
@@ -95,7 +97,7 @@ public class SheepServer {
         messagesToSendCoordinator.add(message);
     }
     
-    public ClientServerConnection addToClients(String address, int port) throws UnknownHostException{
+    public ClientServerConnection addToClients(String address, int port) throws UnknownHostException, IOException{
         InetAddress inetaddress = InetAddress.getByName(address);
         int key = ClientServerConnection.getNextID();
         ClientServerConnection c = new ClientServerConnection(inetaddress, port, key);
@@ -104,6 +106,22 @@ public class SheepServer {
         clients.put(key, c);
         byte[] sendData = intToByteArray(key);
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, c.getAddress(), c.getPort());
+        try {
+            udpClientSocket.send(sendPacket);
+        } catch (IOException ex) {
+            Logger.getLogger(SheepServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //send the older grasses
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        for(Point p: noGrass){
+            outputStream.write(intToByteArray(-1));
+            outputStream.write(new byte[]{(byte)p.x});
+            outputStream.write(new byte[]{(byte)p.y});
+        }
+        sendData = outputStream.toByteArray();
+        sendPacket = new DatagramPacket(sendData, sendData.length, c.getAddress(), c.getPort());
         try {
             udpClientSocket.send(sendPacket);
         } catch (IOException ex) {
@@ -247,7 +265,7 @@ public class SheepServer {
     
     public static void main(String args[]){ 
         System.out.println("[SheepServer] started...");
-        SheepServer server = new SheepServer();
+        SheepServer server = new SheepServer(1234);
         try {
             server.start();
         } catch (IOException ex) {

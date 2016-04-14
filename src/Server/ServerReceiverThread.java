@@ -1,5 +1,6 @@
 package Server;
 
+import Server.Runnables.ServerForwarder;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -32,7 +33,7 @@ public class ServerReceiverThread extends Thread {
 
     @Override
     public void run() {
-        Executor executor = Executors.newFixedThreadPool(20);
+        Executor executor = Executors.newFixedThreadPool(SheepServer.NUM_THREADS_RECEIVER);
         
         while (true) {            
             if (stopped)

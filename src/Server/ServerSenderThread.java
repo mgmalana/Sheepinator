@@ -7,6 +7,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.ClientServerConnection;
@@ -23,6 +25,7 @@ class ServerSenderThread extends Thread {
     private boolean stopped = false;
     private DatagramSocket serverport;
     private SheepServer server;
+    private ServerSenderRunnable serverSenderRun;
     
     public ServerSenderThread(SheepServer server, InetAddress address, DatagramSocket serverSocket) throws SocketException {
         this.serverIPAddress = address;
@@ -30,6 +33,7 @@ class ServerSenderThread extends Thread {
         this.server = server;
         // Create client DatagramSocket
         this.udpClientSocket = serverport;
+        serverSenderRun = new ServerSenderRunnable();
     }
     public void halt() {
         this.stopped = true;
@@ -38,23 +42,18 @@ class ServerSenderThread extends Thread {
         return this.udpClientSocket;
     }
  
+    @Override
     public void run() {                     
-            
-            while(true){
-
-                
-                try {
-                    byte[] sendData = server.handleMessages();
-                    
-                    if(sendData.length > 0){
-                        sendToClients(sendData);
-                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIPAddress , SheepServer.COORDINATOR_PORT);
-                        udpClientSocket.send(sendPacket);
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(ServerSenderThread.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        Executor executor = Executors.newFixedThreadPool(SheepServer.NUM_THREADS_SENDER);
+        
+        while(true){
+            executor.execute(serverSenderRun);
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerSenderThread.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
        
     }
     
@@ -63,6 +62,26 @@ class ServerSenderThread extends Thread {
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, c.getAddress(), c.getPort());
             udpClientSocket.send(sendPacket);
         }
+    }
+    
+    public class ServerSenderRunnable implements Runnable{
+    
+        @Override
+        public void run() {
+            byte[] sendData;
+            try {
+                sendData = server.handleMessages();
+                if(sendData.length > 0){
+                    sendToClients(sendData);
+                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIPAddress , SheepServer.COORDINATOR_PORT);
+                    udpClientSocket.send(sendPacket);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(ServerSenderRunnable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+    
     }
 }   
  
