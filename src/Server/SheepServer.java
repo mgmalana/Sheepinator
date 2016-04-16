@@ -214,28 +214,30 @@ public class SheepServer {
     
     
     private void updateScene(ClientServerConnection c, char input){
-        Sheep sheep = c.getSheep();
-        switch(input){
-                case 'W':
-                case 'w':
-                        sheep.goUp();
+        if(c != null){
+            Sheep sheep = c.getSheep();
+            switch(input){
+                    case 'W':
+                    case 'w':
+                            sheep.goUp();
+                            break;
+                    case 'S':
+                    case 's':
+                            sheep.goDown();
+                            break;
+                    case 'D':
+                    case 'd':
+                            sheep.goRight();
+                            break;
+                    case 'A':
+                    case 'a':
+                            sheep.goLeft();
+                            break;
+                    case 'J':
+                    case 'j':
+                        noGrass.add(new Point(sheep.getxPosition(), sheep.getyPosition()));
                         break;
-                case 'S':
-                case 's':
-                        sheep.goDown();
-                        break;
-                case 'D':
-                case 'd':
-                        sheep.goRight();
-                        break;
-                case 'A':
-                case 'a':
-                        sheep.goLeft();
-                        break;
-                case 'J':
-                case 'j':
-                    noGrass.add(new Point(sheep.getxPosition(), sheep.getyPosition()));
-                    break;
+            }
         }
     }
     

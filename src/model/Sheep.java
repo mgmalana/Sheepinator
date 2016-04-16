@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class Sheep {
 
-        public final static int MAX_NUM_SHEEP = 50;
+        public final static int MAX_NUM_SHEEP = 200;
 	private int xPosition = 0;
 	private int yPosition = 0;
 	

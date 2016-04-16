@@ -21,12 +21,12 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import model.Sheep;
 
-public class SheepClient  implements Runnable{
+public class SheepClient1  implements Runnable{
     
     public static final int PORT = 1234;
     public static final String HOST = "192.168.0.12";
-    private ReceiverThread receiver;
-    private SenderThread sender;
+    private ReceiverThread1 receiver;
+    private SenderThread1 sender;
     private ConcurrentHashMap<Integer, Sheep> sheeps = new ConcurrentHashMap<>();
     private JFrame frame;
     private ImageCanvas canvas;
@@ -34,15 +34,15 @@ public class SheepClient  implements Runnable{
     private int id;
     private Sheep sheep;
     
-    public SheepClient(){   
+    public SheepClient1(){   
         try {
             InetAddress ia = InetAddress.getByName(HOST);
-            sender = new SenderThread(this, ia, PORT);
-            receiver = new ReceiverThread(this, sender.getSocket());
+            sender = new SenderThread1(this, ia, PORT);
+            receiver = new ReceiverThread1(this, sender.getSocket());
         } catch (UnknownHostException | SocketException ex) {
             throw new RuntimeException("Error: " + ex.getMessage());
         }
-        //initializeUI(); // uncomment this for no UI
+        initializeUI(); // uncomment this for no UI
 
     }
     
@@ -55,8 +55,10 @@ public class SheepClient  implements Runnable{
             int y = msg[5 + currentIndex] & 0xFF;
 
 
-            System.out.println("sheep: " + key + " x: " + x + " y: " + y);
+            //System.out.println("sheep: " + key + " x: " + x + " y: " + y);
 
+            
+            
             if(key == -1){
                 noGrass.add(new Point(x, y));
             } else if(sheeps.contains(key)){
@@ -70,7 +72,11 @@ public class SheepClient  implements Runnable{
                 }
             }
 
-            //repaintCanvas();
+            repaintCanvas();
+            if(key == id){
+                System.out.println("MY ID: " + id);
+                System.out.println("Latency: " + (System.currentTimeMillis() - getStartTime()) + " ms.");
+            }
             currentIndex+=6;
         }
     }
@@ -133,7 +139,7 @@ public class SheepClient  implements Runnable{
 
     
     public static void main(String args[]) { 
-        SheepClient sheepClient = new SheepClient();
+        SheepClient1 sheepClient = new SheepClient1();
         sheepClient.start();
     }
     
@@ -157,6 +163,13 @@ public class SheepClient  implements Runnable{
         start();
     }
     
+    public long getStartTime(){
+        return sender.startTime;
+    }
+    
+    public long getEndTime(){
+        return receiver.endTime;
+    }
     
     public class ImageCanvas extends Canvas {
 

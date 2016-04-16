@@ -11,7 +11,7 @@ public class ClientServerConnection {
     private InetAddress address;
     private int port;
     private Sheep sheep;
-    private static int ID_COUNT = 0;
+    private static int ID_COUNT = 1000;
     private int id;
     
     public ClientServerConnection(InetAddress address, int port, int id) {

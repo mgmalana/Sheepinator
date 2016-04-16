@@ -72,13 +72,15 @@ public class SheepCoordinator {
     }
 
     public void handle(DatagramPacket receivePacket) {
-            byte[] serverMessage = receivePacket.getData();
+            byte[] receiveData = new byte[receivePacket.getLength()];
+            System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
+
             ServerCoordinatorConnection server = new ServerCoordinatorConnection(receivePacket.getAddress().getHostAddress(), receivePacket.getPort());                 
             
             if(receivePacket.getLength()==1 && !servers.contains(server)){
                 addServerCoordinatorConnection(server);
             } else {
-                sendToServers(server, serverMessage);
+                sendToServers(server, receiveData);
             }
     }
     
@@ -90,7 +92,8 @@ public class SheepCoordinator {
     }
     
     public void sendToServers(ServerCoordinatorConnection client, byte[] message){
-        byte[] toSendToClients = prepareToByteArray(client.getID(), message);        
+        //byte[] toSendToClients = prepareToByteArray(client.getID(), message);        
+        byte[] toSendToClients = message;      
         System.out.println("Message sending to servers: " + message);
         
         for(ServerCoordinatorConnection c : servers){
