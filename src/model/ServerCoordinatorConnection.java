@@ -1,20 +1,16 @@
 package model;
 
-import java.net.InetAddress;
-import java.util.Objects;
-
 /**
  *
  * @author mgmalana
  */
-public class Connection {
+public class ServerCoordinatorConnection {
     private String address;
     private int port;
-    private Sheep sheep;
     private int id;
     public static int ID_COUNT = 0;
-    
-    public Connection(String address, int port) {
+
+    public ServerCoordinatorConnection(String address, int port) {
         this.address = address;
         this.port = port;
     }
@@ -31,32 +27,22 @@ public class Connection {
         return id;
     }
     
-    public Sheep getSheep(){
-        return sheep;
-    }
-    
-    public void setSheep(Sheep sheep) {
-        this.sheep = sheep;
-    }
-    
     public void setID(int id){
         this.id = id;
     }
-    
-    public static synchronized int getNextID(){
-        return ID_COUNT++;
-    }
+
+
     
     @Override
     public boolean equals(Object o){
         if(o == null){             
             return false;
         }
-        if(!(o instanceof Connection)){
+        if(!(o instanceof ServerCoordinatorConnection)){
             return false;
         }
 
-        Connection other = (Connection) o;
+        ServerCoordinatorConnection other = (ServerCoordinatorConnection) o;
 
         if(!this.address.equals(other.address))
             return false;
@@ -64,13 +50,9 @@ public class Connection {
             return false;
         return true;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 41 * hash + Objects.hashCode(this.address);
-        hash = 41 * hash + this.port;
-        return hash;
+    public static synchronized int getNextID(){
+        return ID_COUNT++;
     }
     
+
 }

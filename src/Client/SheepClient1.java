@@ -1,6 +1,5 @@
 package Client;
 
-import Server.SheepServerThread;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
@@ -13,35 +12,33 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import model.Sheep;
 
-public class SheepClientGUI  extends SheepClient implements Runnable{
+public class SheepClient1  implements Runnable{
     
     public static final int PORT = 1234;
-    public static final String HOST = "localhost";
-    private ReceiverThread receiver;
-    private SenderThread sender;
-    private Sheep sheep;
+    public static final String HOST = "192.168.0.12";
+    private ReceiverThread1 receiver;
+    private SenderThread1 sender;
     private ConcurrentHashMap<Integer, Sheep> sheeps = new ConcurrentHashMap<>();
     private JFrame frame;
     private ImageCanvas canvas;
     private Set <Point> noGrass = Collections.newSetFromMap(new ConcurrentHashMap<Point,Boolean>());
-
+    private int id;
+    private Sheep sheep;
     
-    public SheepClientGUI(){   
-        this.sheep = new Sheep();
+    public SheepClient1(){   
         try {
             InetAddress ia = InetAddress.getByName(HOST);
-            sender = new SenderThread(this, sheep, ia, PORT);
-            receiver = new ReceiverThread(this, sender.getSocket());
+            sender = new SenderThread1(this, ia, PORT);
+            receiver = new ReceiverThread1(this, sender.getSocket());
         } catch (UnknownHostException | SocketException ex) {
             throw new RuntimeException("Error: " + ex.getMessage());
         }
@@ -50,43 +47,42 @@ public class SheepClientGUI  extends SheepClient implements Runnable{
     }
     
     public void updateScene(byte[] msg){
-        int key = toInt(msg);
-        int x = msg[4] & 0xFF;
-        int y = msg[5] & 0xFF;
-        
-        /*
-        if(key == -1){
-            noGrass.add(new Point(x, y));
-        } else if(x == Sheep.VALUE_FOR_REMOVE && y == Sheep.VALUE_FOR_REMOVE) {
-            //System.out.println("remove: " + key);
-            sheeps.remove(key);
-        } else if(key == socket.getLocalPort()) {
-            sheepClient.setXYPosition(x, y);
-        }else {
-            if(sheeps.containsKey(key)){
-                Sheep sheep = sheeps.get(key);
-                sheep.setXYPosition(x, y);
-            } else {
-                sheeps.put(key, new Sheep(x, y));
+        int currentIndex = 0;
+        while(currentIndex + 6 <= msg.length){
+            byte [] keyByteArray = Arrays.copyOfRange(msg, 0 + currentIndex, 4 + currentIndex);
+            int key = toInt(keyByteArray);
+            int x = msg[4 + currentIndex] & 0xFF;
+            int y = msg[5 + currentIndex] & 0xFF;
+
+
+            //System.out.println("sheep: " + key + " x: " + x + " y: " + y);
+
+            
+            
+            if(key == -1){
+                noGrass.add(new Point(x, y));
+            } else if(sheeps.contains(key)){
+                Sheep sheepThis = sheeps.get(key);
+                sheepThis.setXYPosition(x, y);
+            } else{
+                Sheep temp = new Sheep(x, y);
+                sheeps.put(key, temp);
+                if(sheep == null && key == id){
+                    sheep = temp;
+                }
             }
-        }*/
-        System.out.println("sheep: " + key + " x: " + x + " y: " + y);
- 
-        if(key == -1){
-            noGrass.add(new Point(x, y));
-        } else if(sheeps.contains(key)){
-            Sheep sheepThis = sheeps.get(key);
-            sheepThis.setXYPosition(x, y);
-        } else{
-            sheeps.put(key, new Sheep(x, y));
+
+            repaintCanvas();
+            if(key == id){
+                System.out.println("MY ID: " + id);
+                System.out.println("Latency: " + (System.currentTimeMillis() - getStartTime()) + " ms.");
+            }
+            currentIndex+=6;
         }
-        
-        repaintCanvas();
     }
     
     public void start(){
         sender.start();
-        receiver.start();
     }
     
     private int toInt(byte[] b) {
@@ -96,6 +92,15 @@ public class SheepClientGUI  extends SheepClient implements Runnable{
                 (b[0] & 0xFF) << 24;
     }
     
+    public void setIdAndStartReceiving(byte[] id){
+        this.id = toInt(id);
+        System.out.println("Server ID: " + this.id);
+        receiver.start();
+    }
+    
+    public int getId(){
+        return id;
+    }
     public void addNoGrass(int x, int y){
         noGrass.add(new Point(x, y));
     }
@@ -104,8 +109,37 @@ public class SheepClientGUI  extends SheepClient implements Runnable{
         return noGrass.contains(new Point(x, y));
     }
     
+    public byte[] prepareSendToServer(char input){        
+        byte[] finalArray = new byte[5];
+        byte[] a1 = intToByteArray(id);
+        System.arraycopy(a1, 0, finalArray, 0, 4);    
+        finalArray[4] = (byte) input;
+        return finalArray;
+    }
+    
+    private byte[] intToByteArray(int value) {
+    return new byte[] {
+            (byte)(value >> 24),
+            (byte)(value >> 16),
+            (byte)(value >> 8),
+            (byte)value};
+    }
+    
+    private byte[] prepareToByteArray(int ID, byte[] message){
+        byte[] finalArray = new byte[6];
+        byte[] a1 = intToByteArray(ID);
+        
+        System.arraycopy(a1, 0, finalArray, 0, 4);        
+       
+        finalArray[4] = message[0];
+        finalArray[5] = message[1];
+        return finalArray;
+
+    }
+
+    
     public static void main(String args[]) { 
-        SheepClientGUI sheepClient = new SheepClientGUI();
+        SheepClient1 sheepClient = new SheepClient1();
         sheepClient.start();
     }
     
@@ -129,6 +163,13 @@ public class SheepClientGUI  extends SheepClient implements Runnable{
         start();
     }
     
+    public long getStartTime(){
+        return sender.startTime;
+    }
+    
+    public long getEndTime(){
+        return receiver.endTime;
+    }
     
     public class ImageCanvas extends Canvas {
 
@@ -171,8 +212,9 @@ public class SheepClientGUI  extends SheepClient implements Runnable{
             	    Sheep value = entry.getValue();
                     g.drawImage(img, value.getxPosition()*Sheep.SIZE_CELL, value.getyPosition()*Sheep.SIZE_CELL, this);
             	}
-                g.drawImage(imgSelf, sheep.getxPosition()*Sheep.SIZE_CELL, sheep.getyPosition()*Sheep.SIZE_CELL, this);
-
+                if(sheep != null){
+                    g.drawImage(imgSelf, sheeps.get(id).getxPosition()*Sheep.SIZE_CELL, sheeps.get(id).getyPosition()*Sheep.SIZE_CELL, this);
+                }
             }
         }
 

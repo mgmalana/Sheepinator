@@ -1,6 +1,8 @@
 package Client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -11,15 +13,16 @@ import java.util.Random;
  *
  * @author mgmalana
  */
-class SenderThread extends Thread {
+class SenderThread1 extends Thread {
  
     private InetAddress serverIPAddress;
     private DatagramSocket udpClientSocket;
     private boolean stopped = false;
     private int serverport;
-    private SheepClient sheepClient;
+    private SheepClient1 sheepClient;
+    public long startTime;
     
-    public SenderThread(SheepClient sheepClient, InetAddress address, int serverport) throws SocketException {
+    public SenderThread1(SheepClient1 sheepClient, InetAddress address, int serverport) throws SocketException {
         this.serverIPAddress = address;
         this.serverport = serverport;
         // Create client DatagramSocket
@@ -47,7 +50,7 @@ class SenderThread extends Thread {
                 // Message to send
  
                 char[] inputChoices = {'w', 's', 'a', 'd', 'j'};
-                char inputChar = inputChoices[random.nextInt(inputChoices.length)];
+                //char inputChar = inputChoices[random.nextInt(inputChoices.length)];
 
                 try {
                     Thread.sleep(500);                 //1000 milliseconds is one second.
@@ -55,18 +58,15 @@ class SenderThread extends Thread {
                     Thread.currentThread().interrupt();
                 }
                 
-                /*
-                if (clientMessage.equals(".")){
-                    break;
-                }*/
-                /*String clientMessage = inFromUser.readLine();
+                BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+                
+                String clientMessage = inFromUser.readLine();
 
                 if (clientMessage.length() == 0){
                     continue;
                 }
                 char inputChar = clientMessage.charAt(0);
-                */
-                
+               
                 if(inputChar != 'a' || inputChar != 'w' 
                         || inputChar != 's' || inputChar != 'd'
                         || inputChar != 'j'){
@@ -75,7 +75,9 @@ class SenderThread extends Thread {
                     
                     // Create a DatagramPacket with the data, IP address and port number
                     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIPAddress, serverport);
-
+                    startTime =  System.currentTimeMillis();
+                    //System.out.println("Start: " + startTime);
+                    
                     udpClientSocket.send(sendPacket);
                     //System.out.println("Message sent: " + sendData);
                 }

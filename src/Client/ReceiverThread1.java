@@ -9,13 +9,14 @@ import java.net.SocketException;
  *
  * @author mgmalana
  */
-public class ReceiverThread extends Thread {
+public class ReceiverThread1 extends Thread {
  
     private DatagramSocket udpClientSocket;
     private boolean stopped = false;
-    private SheepClient sheepClient;
+    private SheepClient1 sheepClient;
+    public long endTime;
     
-    public ReceiverThread(SheepClient sheepClient, DatagramSocket ds) throws SocketException {
+    public ReceiverThread1(SheepClient1 sheepClient, DatagramSocket ds) throws SocketException {
         this.udpClientSocket = ds;
         this.sheepClient = sheepClient;
     }
@@ -41,7 +42,8 @@ public class ReceiverThread extends Thread {
                 System.arraycopy(receivePacket.getData(), receivePacket.getOffset(), receiveData, 0, receivePacket.getLength());
 
                 sheepClient.updateScene(receiveData);
-                
+//                endTime = System.currentTimeMillis();
+                //System.out.println("End: " + endTime);
                 // Extract the reply from the DatagramPacket      
 //                String serverReply =  new String(receivePacket.getData(), 0, receivePacket.getLength()); 
                 Thread.yield();
